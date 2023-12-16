@@ -5,6 +5,16 @@ import pandas as pd
 from utils.utils import load_config
 
 class PCA_Transform(BaseEstimator, TransformerMixin):
+    """Transformer class that fits PCA algoritm on input data replaces selected columns
+    from the input dataset (pca_columns) with surogate pca columns PC1, PC2, ..., PCN
+    that explain variance of the column to the level equal or higher than the threshold.
+
+    Args:
+        pca_threshold (float): how much variance must be explained by surogate columns
+        all_columns   (list[string]): list of all column names in the dataset - required to 
+                                    initialize names of the output dataframe
+        pca_columns:   (list[string]): list of callumns that will be replaced with PCA
+    """
         
     def __init__(self, all_columns):
         config = load_config()

@@ -28,6 +28,15 @@ def fit_transform_display(model_class,X_train, y_train, X_test, y_test, model_kw
     return model_reg
 
 def best_run(cv_results_, threshold = 0.05):
+    """Finds runs where not overfitting happened (train score - test score < threshould) and displays best scores and parameters
+
+    Args:
+        cv_results_ (dict): result dict from GridSearchCV or RandomizedSearchCV
+        threshold (float, optional): Threshold below which train and test score is acceptable. Defaults to 0.05.
+
+    Returns:
+        dict: hyperparameters of the best run
+    """
     nooverfit = [train_test  for train_test in list(zip(cv_results_['mean_train_score'], cv_results_['mean_test_score'])) if (train_test[0] - train_test[1] <= threshold)]
     if nooverfit:
         best_index = nooverfit.index(max(nooverfit))
