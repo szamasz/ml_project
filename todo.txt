@@ -1,0 +1,32 @@
+https://github.com/smazzanti/tds_your_dataset_has_missing_values_do_nothing/blob/main/missing-values-do-nothing.ipynb
+
+EDA: msno dendragram, multifeature diagram (from yt video Warmerdam)
+
+("missing_indicator", MissingIndicator()), 
+
+1. automatic feature selection? pointless, it's not hyperparameter. maybe feature selection based on 10 best runs?
+2. automatic pca vs notpca? flexible pipeline?
+3. separate per month, and then per woj?
+
+add more regression algos, dl?
+how to get actual model from optuna result in order to do predictions
+all in yml configuraiton, dynamic pipeline creation
+use wojewodztwa leaflet? streamlit?
+
+column selection - yaml - include
+
+optuna visualizations!! https://github.com/optuna/optuna-examples/blob/main/visualization/plot_pareto_front.py      
+
+https://github.com/optuna/optuna-dashboard -> in jupter?
+https://medium.com/optuna/introducing-timeline-plot-a-new-feature-of-optuna-v3-2-2628a0ee9502
+sampler
+
+suggest_float('svc_c', 1e-10, 1e10, log=True)
+
+https://github.com/optuna/optuna-examples/tree/main/mlflow
+
+https://hydra.cc/
+
+https://optuna.readthedocs.io/en/stable/tutorial/index.html
+
+https://optuna.readthedocs.io/en/stable/tutorial/20_recipes/003_attributes.html - reporting, mflow?
