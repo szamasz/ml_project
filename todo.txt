@@ -1,8 +1,25 @@
+1 dataset at the time, dataset from command argument -> in the loop all datasets?
+execute optuna from kedro node?
+optuna: network, prning 
+mlflow
+
+
+Optuna:
+trenowanie na 1 miesiacu z osobna? czy jakies zaleznosci w stosunku do poprzedniego miesiaca? dotrenowanie?
+nazwy kolumn w kolejnym kroku, wspoldzialanie ("missing_indicator", MissingIndicator()), z pca
+przetestowac wybor kolumn
+zwiekszanie liczby wierszy, objective function with arguments, pruner 
+samplers?
+algos, dn?
+saving n last runs
+
+
+
 https://github.com/smazzanti/tds_your_dataset_has_missing_values_do_nothing/blob/main/missing-values-do-nothing.ipynb
 
 EDA: msno dendragram, multifeature diagram (from yt video Warmerdam)
 
-("missing_indicator", MissingIndicator()), 
+
 
 1. automatic feature selection? pointless, it's not hyperparameter. maybe feature selection based on 10 best runs?
 2. automatic pca vs notpca? flexible pipeline?
@@ -22,11 +39,75 @@ https://medium.com/optuna/introducing-timeline-plot-a-new-feature-of-optuna-v3-2
 sampler
 
 suggest_float('svc_c', 1e-10, 1e10, log=True)
+def objective(trial: Trial, fast_check=True, target_meter=0, return_info=False): #return_info=False???
+study.trials_dataframe()
+ best_params = study.best_params - but you can also save model
+ if trial.number > min_n_trials and terminator.should_terminate(study)
+ study.set_user_attr
+ optuna.study.StudySummary(
+trial.report() The reported values are used by the pruners to determine whether this trial should be pruned.
 
-https://github.com/optuna/optuna-examples/tree/main/mlflow
+optuna.visualization.matplotlib.plot_param_importances(study) - and others
+
+sampler https://optuna.readthedocs.io/en/stable/faq.html#id7
+pruners?
+suggest_uniform, suggest_loguniform, suggest_discrete_uniform
+
+https://github.com/optuna/optuna-examples/tree/main/mlflow, https://github.com/optuna/optuna/issues/4824
 
 https://hydra.cc/
 
 https://optuna.readthedocs.io/en/stable/tutorial/index.html
 
 https://optuna.readthedocs.io/en/stable/tutorial/20_recipes/003_attributes.html - reporting, mflow?
+
+xgboost? XGBoost: optuna.integration.XGBoostPruningCallback
+
+ storage="sqlite:///example.db" - use different db https://optuna.readthedocs.io/en/stable/faq.html#id21
+
+ https://optuna.readthedocs.io/en/stable/faq.html#id6
+
+ gpu - not needed
+
+ logging, https://optuna.readthedocs.io/en/stable/faq.html#id14, https://optuna.readthedocs.io/en/stable/faq.html#id5
+
+ spinx documentation
+
+ https://github.com/optuna/optuna-examples/tree/main/ 
+
+ get_param_importances(), https://optuna-integration.readthedocs.io/en/stable/reference/index.html#shap
+
+ feature store!
+
+ def objective(trial):
+
+    clf = MLPClassifier(
+        hidden_layer_sizes=tuple(
+            [trial.suggest_int("n_units_l{}".format(i), 32, 64) for i in range(3)]
+        ),
+        learning_rate_init=trial.suggest_float("lr_init", 1e-5, 1e-1, log=True),
+    )
+
+    for step in range(100):
+        clf.partial_fit(x_train, y_train, classes=classes)
+        value = clf.score(x_valid, y_valid)
+
+        # Report intermediate objective value.
+        trial.report(value, step)
+
+        # Handle pruning based on the intermediate value.
+        if trial.should_prune():
+            raise optuna.TrialPruned()
+
+    return value
+
+more models saved, not only the best, selection based on parameters?
+
+sort imports, black, flake, make, mypy
+
+m = sklearn.ensemble.RandomForestClassifier(
+        random_state=0, 
+        oob_score=True, 
+        n_estimators=100,
+        min_samples_leaf=5, 
+        max_depth=10)

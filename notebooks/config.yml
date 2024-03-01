@@ -1,0 +1,13 @@
+sources:
+  apartments:
+    source: https://www.kaggle.com/code/krzysztofjamroz/apartment-for-sale-in-poland-data-analysis/input
+    files:
+      - apartments_pl_2023_08.csv.zip
+      #- apartments_pl_2023_09.csv.zip
+      #- apartments_pl_2023_10.csv.zip
+      #- apartments_pl_2023_11.csv.zip
+    target: price
+    pca:
+      threshold: 0.5
+      columns: ['schoolDistance', 'clinicDistance', 'postOfficeDistance', 'kindergartenDistance','restaurantDistance','collegeDistance','pharmacyDistance']
+    drop_columns: ['rooms','id','condition','buildingMaterial']
