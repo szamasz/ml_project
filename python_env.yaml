@@ -1,0 +1,20 @@
+python: "3.10.12"
+build_dependencies:
+  - pip
+dependencies:
+- click
+- ipython
+- jupyterlab
+- kedro
+- notebook
+- ruff
+- ipykernel
+- pandas
+- seaborn
+- numpy
+- matplotlib
+- missingno
+- scikit-learn
+- ydata-profiling
+- optuna
+- optuna-dashboard

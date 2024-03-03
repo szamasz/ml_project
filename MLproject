@@ -1,0 +1,11 @@
+name: ml_project
+
+entry_points:
+
+  etl_data:
+    command: "python src/etl_data.py"
+
+  optuna:
+    parameters:
+      number-of-runs: {type: int, default: 1}
+    command: "python src/optuna_study.py"

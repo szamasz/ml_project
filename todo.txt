@@ -2,6 +2,8 @@
 execute optuna from kedro node?
 optuna: network, prning 
 mlflow
+zaladuj dane bezposrednio z kaggle
+polars zamias pandas?
 
 
 Optuna:
@@ -13,6 +15,25 @@ samplers?
 algos, dn?
 saving n last runs
 
+Mlflow:
+import mlflow.sklearn
+import pandas as pd
+import os
+#Reading Pandas Dataframe from mlflow
+df=mlflow.search_runs(filter_string="metrics.rmse < 1")
+#Fetching Run ID for
+run_id = df.loc[df['metrics.rmse'].idxmin()]['run_id']
+#Load model
+model = mlflow.sklearn.load_model("runs:/" + run_id + "/model")
+#Inference
+wine_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "wine-quality.csv")
+data = pd.read_csv(wine_path)
+test = data.drop(["quality"], axis=1)
+print(model.predict(test))
+
+mlflow models serve -m ~/mlruns/0/your_uuid/artifacts/model -h 0.0.0.0 -p 8001 
+
+mlflow.log_figure(
 
 
 https://github.com/smazzanti/tds_your_dataset_has_missing_values_do_nothing/blob/main/missing-values-do-nothing.ipynb
@@ -111,3 +132,29 @@ m = sklearn.ensemble.RandomForestClassifier(
         n_estimators=100,
         min_samples_leaf=5, 
         max_depth=10)
+
+
+def champion_callback(study, frozen_trial):
+    """
+    Logging callback that will report when a new trial iteration improves upon existing
+    best trial values.
+
+    Note: This callback is not intended for use in distributed computing systems such as Spark
+    or Ray due to the micro-batch iterative implementation for distributing trials to a cluster's
+    workers or agents.
+    The race conditions with file system state management for distributed trials will render
+    inconsistent values with this callback.
+    """
+
+    winner = study.user_attrs.get("winner", None)
+
+    if study.best_value and winner != study.best_value:
+        study.set_user_attr("winner", study.best_value)
+        if winner:
+            improvement_percent = (abs(winner - study.best_value) / study.best_value) * 100
+            print(
+                f"Trial {frozen_trial.number} achieved value: {frozen_trial.value} with "
+                f"{improvement_percent: .4f}% improvement"
+            )
+        else:
+            print(f"Initial trial {frozen_trial.number} achieved value: {frozen_trial.value}")

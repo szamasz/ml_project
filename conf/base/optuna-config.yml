@@ -2,6 +2,6 @@ sources:
   apartments:
     source: https://www.kaggle.com/code/krzysztofjamroz/apartment-for-sale-in-poland-data-analysis/input
     target: price
-    parametrized_columns: ['ownership']
-    exclude_columns: ['ownership']
-    include_only_columns:
+    parametrized_columns: []
+    exclude_columns: []
+    include_only_columns: ['city','squareMeters','centreDistance','buildYear','latitude','longitude']

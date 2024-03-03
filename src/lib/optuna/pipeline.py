@@ -1,25 +1,22 @@
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from optuna import Trial
-from lib.optuna.imputers import init_imputer
+from lib.optuna.imputers import init_imputers
 from lib.optuna.scalers import init_robust_scaler
 from lib.optuna.encoders import init_encoder
 from lib.optuna.columns import init_columns
 from lib.optuna.algos import init_learner
-
+import sys
 
 
 def init_numerical_pipeline(trial : Trial, columns: list[str] = None) -> Pipeline:
 
   steps = [
-    ('imputer',init_imputer(trial)),
-    ('scaler', init_robust_scaler(trial))#,
-    #('pca', pct.PCA_Transform(columns)) #we don't want pca!
+    init_imputers(trial),
+    ('scaler', init_robust_scaler(trial))
   ]
-
-  #print(steps)
-
   pipeline = Pipeline(steps)
+
   return pipeline
 
 def init_categorical_pipeline(trial : Trial, columns: list[str] = None) -> Pipeline:
