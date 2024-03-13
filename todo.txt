@@ -1,6 +1,16 @@
+optuna: network, prning, objective as class, mlflow- track all models
+dane:
+* feature store
+* bezposrednio z kaggle
+deployment:
+* mlflow serve
+* streamlit app
+sphinx, riff, annotations
+
+
 1 dataset at the time, dataset from command argument -> in the loop all datasets?
 execute optuna from kedro node?
-optuna: network, prning 
+
 mlflow
 zaladuj dane bezposrednio z kaggle
 polars zamias pandas?
@@ -32,6 +42,7 @@ test = data.drop(["quality"], axis=1)
 print(model.predict(test))
 
 mlflow models serve -m ~/mlruns/0/your_uuid/artifacts/model -h 0.0.0.0 -p 8001 
+https://medium.com/@gyani91/serving-a-model-using-mlflow-8ba5db0a26c0
 
 mlflow.log_figure(
 

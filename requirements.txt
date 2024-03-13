@@ -16,3 +16,5 @@ scikit-learn
 ydata-profiling
 optuna
 optuna-dashboard
+streamlit
+pydantic

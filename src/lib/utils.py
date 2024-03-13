@@ -122,7 +122,44 @@ def save_best_study(study, name, X_train, y_train, X_val, y_val, columns, target
         signature = infer_signature(X_train_selected, y_pred)
         validation_mape = mean_absolute_percentage_error(y_val, y_pred)
         mlflow.log_metrics({"validation_mape": validation_mape})
-        mlflow.sklearn.log_model(pipeline,artifact_path="ml_project", signature=signature)
+        model_info = mlflow.sklearn.log_model(pipeline,artifact_path="ml_project", signature=signature, registered_model_name=name)
+        print(model_info.model_uri)
+
+def predict_model(name, alias = 'best'):
+    import io
+    import json
+    best_model = mlflow.pyfunc.load_model(f"models:/{name}@{alias}")
+    data = """city,type,squareMeters,floor,floorCount,buildYear,latitude,longitude,centreDistance,poiCount,schoolDistance,clinicDistance,postOfficeDistance,kindergartenDistance,restaurantDistance,collegeDistance,pharmacyDistance,ownership,hasParkingSpace,hasBalcony,hasElevator,hasSecurity,hasStorageRoom
+szczecin,blockOfFlats,63.0,4.0,10.0,1980.0,53.3789332,14.6252957,6.53,9.0,0.118,1.389,0.628,0.105,1.652,,0.413,condominium,yes,yes,yes,no,yes"""
+    df = pd.read_csv(io.StringIO(data), sep= ',')
+    inputs = json.loads(best_model.metadata.signature.to_dict()['inputs'])
+    sel_cols = [d['name'] for d in inputs]
+    df_sel = df[sel_cols]
+    print(df_sel['city'])
+    prediction = best_model.predict(df_sel)
+    print(prediction[0])
+    print("END")
+    return prediction[0]
+
+def app():
+    import streamlit as st
+    st.title("Streamlit App with Dropdown, Input Fields, and Button")
+    
+    # Dropdown menu with options 'a', 'b', 'c'
+    selected_option = st.selectbox("Select an option:", ['a', 'b', 'c'])
+
+    # Input fields
+    input_value1 = st.text_input("Enter value 1:", value='Default value 1')
+    input_value2 = st.text_input("Enter value 2:", value='Default value 2')
+    input_value3 = st.text_input("Enter value 3:", value='Default value 3')
+
+    # Button to execute code
+    if st.button("Execute Code"):
+        # Your custom code to execute when the button is clicked
+        output_result = f"Output: {selected_option} | {input_value1} | {input_value2} | {input_value3}"
+
+        # Display the output result
+        st.write(output_result)
 
 def save_best_study2(study, name, X_train, y_train, X_val, y_val):
 

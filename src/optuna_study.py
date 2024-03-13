@@ -1,7 +1,7 @@
 import pandas as pd
 from optuna import create_study
 from lib.optuna.objective import objective
-from lib.utils import prepare_data, save_best_study
+from lib.utils import prepare_data, save_best_study, predict_model
 from sklearn import set_config
 from optuna import logging as optuna_logging
 import logging
@@ -21,7 +21,7 @@ def main():
 
     X_train, X_val, y_train, y_val, num_columns, cat_columns, columns, target = prepare_data(dataset)   
 
-    name = dataset
+    name = dataset+'_selected_columns'
     n_trials = 1
 
     print(f"Starting processing for dataset: {name}")
@@ -31,6 +31,7 @@ def main():
     print(f"Best mape score on training data: {float(study.best_value)*(-1)}")
 
     save_best_study(study,name,X_train, y_train, X_val, y_val, columns, target)
+    predict_model(name, alias = 'best')
 
 
 if __name__ == '__main__':

@@ -8,3 +8,4 @@ todo.txt
 .telemetry
 .venv/
 logs/
+mlruns/
