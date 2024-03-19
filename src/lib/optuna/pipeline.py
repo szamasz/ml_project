@@ -28,11 +28,13 @@ def init_categorical_pipeline(trial : Trial, columns: list[str] = None) -> Pipel
 
 
 
-def init_model(trial : Trial, numerical_columns : list[str], categorical_columns : list[str]) -> ColumnTransformer:
+def init_model(trial : Trial, config, numerical_columns : list[str], categorical_columns : list[str]) -> ColumnTransformer:
 
-  selected_numerical_columns = init_columns(trial, numerical_columns)
+  selected_numerical_columns = init_columns(trial, config, numerical_columns)
+  #print(f"selected_numerical_columns: {selected_numerical_columns}")
   #selected_categorical_columns = init_columns(trial, categorical_columns)
-  selected_categorical_columns = init_columns(trial, categorical_columns)
+  selected_categorical_columns = init_columns(trial, config, categorical_columns)
+  #print(f"selected_categorical_columns: {selected_categorical_columns}")
 
   numerical_pipeline = init_numerical_pipeline(trial, selected_numerical_columns)
   categorical_pipeline = init_categorical_pipeline(trial, selected_categorical_columns)

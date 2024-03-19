@@ -7,10 +7,8 @@ from sklearn.metrics import mean_absolute_percentage_error
 import mlflow
 from mlflow.models import infer_signature
 from hashlib import sha256
-from optuna.visualization import plot_param_importances
-from matplotlib import pyplot as plt
-import plotly.graph_objects as go
-from plotly.tools import mpl_to_plotly
+from optuna.visualization import plot_param_importances, plot_optimization_history
+import base64
 
 cur_dir = os.path.abspath(os.curdir)
 
@@ -48,7 +46,7 @@ def load_config(file = "optuna-config.yml"):
     """
     conf_file = cur_dir + '/conf/base/' + file 
     with open(conf_file, 'r') as f:
-        return yaml.safe_load(f)
+        return yaml.safe_load(f)['sources']
     
 
 def load_data(dataset):
@@ -75,12 +73,12 @@ def load_data(dataset):
     df.name = dataset
     return df
 
-def prepare_data(dataset, train_split_ratio = 0.2, random_stage = 14):
+def prepare_data(config, train_split_ratio = 0.2, random_stage = 14):
     from sklearn.model_selection import train_test_split
 
-    config = load_config()
+    dataset = list(config.keys())[0]
     df = load_data(dataset)
-    target = config['sources'][dataset]['target']
+    target = config[dataset]['target']
     X = df.drop(target, axis =1)
     y = df[target]
 
@@ -91,9 +89,10 @@ def prepare_data(dataset, train_split_ratio = 0.2, random_stage = 14):
     
     return  X_train, X_val, y_train, y_val, num_columns, cat_columns, X.columns.values, target
 
-def save_best_study(study, name, X_train, y_train, X_val, y_val, columns, target):
+def save_best_study(study, experiment_name, X_train, y_train, X_val, y_val, columns, target):
     #with mlflow.start_run(run_name=str(study.best_trial.number)):
-    with mlflow.start_run(run_name="psz_run"):
+    #mlflow.set_experiment(experiment_name)
+    with mlflow.start_run():
         mlflow.log_params(study.best_trial.params)
         mlflow.log_params({"target": target} )
         mlflow.log_metrics({"train_mape": study.best_trial.value*(-1)})
@@ -106,12 +105,21 @@ def save_best_study(study, name, X_train, y_train, X_val, y_val, columns, target
         if figure:
             mlflow.log_figure(figure,'param_importances.html')
 
-        
+        figure = None
+        try:
+            figure = plot_optimization_history(study)
+        except:
+            pass
+        if figure:
+            mlflow.log_figure(figure,'optimization_history.html')
+
+        #print(f"best trial items: {study.best_trial.params.items()}")
         columns_to_drop = [ k for k,v in study.best_trial.params.items() if k in columns and v == False ]
         print(f"Following columns are dropped in final model: {','.join(columns_to_drop)}")
         best_model = study.user_attrs['best_model']
-        mlflow.log_params({"hash": sha256(best_model.encode('utf-8')).hexdigest()} )
-        model_bytes = bytes.fromhex(best_model)
+        mlflow.log_params({"hash": sha256(best_model.encode('utf-8')).hexdigest()[:1024]} )
+        #model_bytes = bytes.fromhex(best_model)
+        model_bytes = base64.b64decode(best_model.encode('ascii'))
         pipeline = pickle.loads(model_bytes)
     
         X_train_selected = X_train.drop(columns_to_drop, axis = 1)
@@ -122,44 +130,8 @@ def save_best_study(study, name, X_train, y_train, X_val, y_val, columns, target
         signature = infer_signature(X_train_selected, y_pred)
         validation_mape = mean_absolute_percentage_error(y_val, y_pred)
         mlflow.log_metrics({"validation_mape": validation_mape})
-        model_info = mlflow.sklearn.log_model(pipeline,artifact_path="ml_project", signature=signature, registered_model_name=name)
-        print(model_info.model_uri)
-
-def predict_model(name, alias = 'best'):
-    import io
-    import json
-    best_model = mlflow.pyfunc.load_model(f"models:/{name}@{alias}")
-    data = """city,type,squareMeters,floor,floorCount,buildYear,latitude,longitude,centreDistance,poiCount,schoolDistance,clinicDistance,postOfficeDistance,kindergartenDistance,restaurantDistance,collegeDistance,pharmacyDistance,ownership,hasParkingSpace,hasBalcony,hasElevator,hasSecurity,hasStorageRoom
-szczecin,blockOfFlats,63.0,4.0,10.0,1980.0,53.3789332,14.6252957,6.53,9.0,0.118,1.389,0.628,0.105,1.652,,0.413,condominium,yes,yes,yes,no,yes"""
-    df = pd.read_csv(io.StringIO(data), sep= ',')
-    inputs = json.loads(best_model.metadata.signature.to_dict()['inputs'])
-    sel_cols = [d['name'] for d in inputs]
-    df_sel = df[sel_cols]
-    print(df_sel['city'])
-    prediction = best_model.predict(df_sel)
-    print(prediction[0])
-    print("END")
-    return prediction[0]
-
-def app():
-    import streamlit as st
-    st.title("Streamlit App with Dropdown, Input Fields, and Button")
-    
-    # Dropdown menu with options 'a', 'b', 'c'
-    selected_option = st.selectbox("Select an option:", ['a', 'b', 'c'])
-
-    # Input fields
-    input_value1 = st.text_input("Enter value 1:", value='Default value 1')
-    input_value2 = st.text_input("Enter value 2:", value='Default value 2')
-    input_value3 = st.text_input("Enter value 3:", value='Default value 3')
-
-    # Button to execute code
-    if st.button("Execute Code"):
-        # Your custom code to execute when the button is clicked
-        output_result = f"Output: {selected_option} | {input_value1} | {input_value2} | {input_value3}"
-
-        # Display the output result
-        st.write(output_result)
+        model_info = mlflow.sklearn.log_model(pipeline,artifact_path="ml_project", signature=signature, registered_model_name=experiment_name)
+        #print(model_info.model_uri)
 
 def save_best_study2(study, name, X_train, y_train, X_val, y_val):
 

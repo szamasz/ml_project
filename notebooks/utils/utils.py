@@ -33,7 +33,7 @@ def load_data(config, dataset, full = True):
     """
 
     
-    data_dir = cur_dir+'/../data/01_raw/'
+    data_dir = cur_dir+'/../data/01_raw/apartments/'
     df_files = []
     try:
         files = config['sources'][dataset]['files']

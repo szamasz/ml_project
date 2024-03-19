@@ -1,15 +1,17 @@
 from optuna import Trial
 from lib.utils import load_config
 
-dataset = 'apartments'
 
-def choose_columns(all_columns : list[str]):
+
+
+def choose_columns(config, all_columns : list[str]):
     
-    config = load_config()
+    dataset = list(config.keys())[0]
+    #print(config)
     #print(f'config {config}')
-    exclude_columns = config['sources'][dataset].get('exclude_columns',[]) or []
-    include_only_columns = config['sources'][dataset].get('include_only_columns',[]) or []
-    parametrized_columns = config['sources'][dataset].get('parametrized_columns',[]) or []
+    exclude_columns = config[dataset].get('exclude_columns',[]) or []
+    include_only_columns = config[dataset].get('include_only_columns',[]) or []
+    parametrized_columns = config[dataset].get('parametrized_columns',[]) or []
 
     #print(f">>>>>>>>>>>>>>>all: {all_columns}")
     if include_only_columns and exclude_columns:
@@ -31,13 +33,14 @@ def choose_columns(all_columns : list[str]):
     
     return remain_columns, parametrized_columns, exclude_columns
 
-def init_columns(trial : Trial, columns : list[str]) -> list[str]:
+def init_columns(trial : Trial, config, columns : list[str]) -> list[str]:
 
-  remain_columns, parametrized_columns, exclude_columns = choose_columns(columns)
+  remain_columns, parametrized_columns, exclude_columns = choose_columns(config, columns)
+  #print(f"exclude: {exclude_columns}")
   choose = lambda column: trial.suggest_categorical(column, [True, False])
   choose_false = lambda column: trial.suggest_categorical(column, [False])
   choices = [*filter(choose, parametrized_columns)]
   #choices_true =  [*filter(choose_true, include_columns)]
   choices_false =  [*filter(choose_false, exclude_columns)]
-  #print(f"choices: {choices}")
+  #print(f"choices {choices}, choices_false: {choices_false} remain_columns: {remain_columns}")
   return choices + choices_false + remain_columns

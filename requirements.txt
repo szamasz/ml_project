@@ -18,3 +18,4 @@ optuna
 optuna-dashboard
 streamlit
 pydantic
+click

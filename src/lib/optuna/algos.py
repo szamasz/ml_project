@@ -6,9 +6,6 @@ from sklearn.linear_model import LinearRegression
 def init_random_forest(trial : Trial) -> RandomForestRegressor:
   params = {
     'n_estimators': trial.suggest_int('n_estimators', 50, 1000),
-    'min_samples_split': trial.suggest_int('min_samples_split', 50, 1000),
-    'max_leaf_nodes': trial.suggest_int('max_leaf_nodes', 5, 100),
-    'min_samples_leaf': trial.suggest_int('min_samples_leaf', 5, 500),
     'max_depth': trial.suggest_int('max_depth', 1, 20),
     'max_features': trial.suggest_float('max_features', 0, 1),
     'bootstrap': trial.suggest_categorical('bootstrap', [True, False]),
@@ -20,9 +17,6 @@ def init_random_forest(trial : Trial) -> RandomForestRegressor:
 def init_extra_forest(trial : Trial) -> ExtraTreesRegressor:
   params = {
     'n_estimators': trial.suggest_int('n_estimators', 50, 1000),
-    'min_samples_split': trial.suggest_int('min_samples_split', 50, 1000),
-    'max_leaf_nodes': trial.suggest_int('max_leaf_nodes', 5, 100),
-    'min_samples_leaf': trial.suggest_int('min_samples_leaf', 5, 500),
     'max_depth': trial.suggest_int('max_depth', 1, 20),
     'max_features': trial.suggest_float('max_features', 0, 1),
     'bootstrap': trial.suggest_categorical('bootstrap', [True, False]),

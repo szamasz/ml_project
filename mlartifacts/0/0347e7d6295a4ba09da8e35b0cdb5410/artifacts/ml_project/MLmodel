@@ -1,0 +1,28 @@
+artifact_path: ml_project
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.10.12
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.4.1.post1
+mlflow_version: 2.11.0
+model_size_bytes: 4898303
+model_uuid: 6a2d677ad0454356a3c79756cb5244a3
+run_id: 0347e7d6295a4ba09da8e35b0cdb5410
+signature:
+  inputs: '[{"type": "string", "name": "city", "required": true}, {"type": "double",
+    "name": "squareMeters", "required": true}, {"type": "double", "name": "buildYear",
+    "required": false}, {"type": "double", "name": "latitude", "required": true},
+    {"type": "double", "name": "longitude", "required": true}, {"type": "double",
+    "name": "centreDistance", "required": true}]'
+  outputs: '[{"type": "tensor", "tensor-spec": {"dtype": "float64", "shape": [-1]}}]'
+  params: null
+utc_time_created: '2024-03-17 10:59:03.080526'

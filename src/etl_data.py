@@ -4,6 +4,8 @@ df_apartments = load_raw_data('apartments')
 
 df_apartments_1 = df_apartments.drop(["id","condition","buildingMaterial","rooms"], axis=1)
 
+df_apartments_1 = df_apartments_1.drop_duplicates()
+
 df_apartments_1.loc[df_apartments_1['type'].isna(),['type']]='Other'
 df_apartments_1.loc[df_apartments_1['hasElevator'].isna(),['hasElevator']]='Other'
 
