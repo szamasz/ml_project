@@ -8,6 +8,6 @@ sources:
       #- apartments_pl_2023_11.csv.zip
     target: price
     pca:
-      threshold: 0.5
+      threshold: 0.9
       columns: ['schoolDistance', 'clinicDistance', 'postOfficeDistance', 'kindergartenDistance','restaurantDistance','collegeDistance','pharmacyDistance']
     drop_columns: ['rooms','id','condition','buildingMaterial']

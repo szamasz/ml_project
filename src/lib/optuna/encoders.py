@@ -9,7 +9,7 @@ Encoder = (
 def init_ohe_encoder(trial : Trial) -> OneHotEncoder:
   return OneHotEncoder(sparse_output=False, handle_unknown='error')
 
-def init_ordinal_encoder(trial : Trial) -> OneHotEncoder:
+def init_ordinal_encoder(trial : Trial) -> OrdinalEncoder:
   return OrdinalEncoder(handle_unknown='error')
 
 def init_encoder(trial : Trial) -> Encoder:
