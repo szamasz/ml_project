@@ -3,6 +3,7 @@
 ## Overview
 
 EDA for the project is located in notebooks/apartments_eda.ipynb
+Docs: yprofile report and presentation is located in docs/
 
 Optuna training training script is located in src/optuna_study.py which works with dependencies in src/lib/optuna/*
 
