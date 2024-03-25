@@ -25,4 +25,4 @@ Options:
 
 * Optuna visualisation: optuna-dashboard sqlite:///apartments.sqlite3
 * MFLOW UI: mlflow server --port 5000 2>&1 &>logs/mlflow_ui.log --backend-store-uri sqlite:///ml_project-mlruns.db &
-* streamlit run src/app.py -- --run_name apartments_selected_columns
+* Interactive UI application: streamlit run src/app.py -- --run_name <experiment_name>
