@@ -14,13 +14,13 @@ Execution:
 * ETL: mlflow run . --env-manager local -e etl_data
 * mlflow run . --env-manager local -e optuna -P config_file=apartments_selected_columns.yml -P experiment_name=apartments_selected_columns_linear -P number_of_trials=100 -P sampler=Random
 
-Options:
-  --config_file TEXT          [required]
-  --experiment_name TEXT
-  --number_of_trials INTEGER  [required]
-  --prune TEXT
-  --sampler TEXT
-  --help   
+Options:  
+  --config_file TEXT          [required]  
+  --experiment_name TEXT  
+  --number_of_trials INTEGER  [required]  
+  --prune TEXT  
+  --sampler TEXT  
+  --help  
 
 * Optuna visualisation: optuna-dashboard sqlite:///apartments.sqlite3
 * MFLOW UI: mlflow server --port 5000 2>&1 &>logs/mlflow_ui.log --backend-store-uri sqlite:///ml_project-mlruns.db &
