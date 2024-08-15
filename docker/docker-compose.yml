@@ -1,0 +1,61 @@
+services:
+  postgres:
+    container_name: container-pg
+    image: postgres
+    hostname: localhost
+    ports:
+      - "5432:5432"
+    profiles: [ local, prod ]
+    env_file: ../conf/env/env_local.sh
+    volumes:
+      - ../storage/postgres:/var/lib/postgresql/data:z
+      - ../conf/env/postgres_init.sh:/docker-entrypoint-initdb.d/init-database.sh
+    #restart: unless-stopped
+
+  pgadmin:
+    container_name: container-pgadmin
+    image: dpage/pgadmin4
+    depends_on:
+      - postgres
+    ports:
+      - "5050:80"
+    env_file: ../conf/env/env_local.sh
+    profiles: [ local ] 
+    restart: unless-stopped
+
+  mlflow:
+    image: bitnami/mlflow #prefered to vendor's image because it supports sqlalchemy backends which makes use of postgresql possible
+    depends_on:
+      - postgres
+    command: /opt/bitnami/python/bin/mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri postgresql://${MLFLOW_DB_USER}:${MLFLOW_DB_PASSWORD}@postgres/mlflow --default-artifact-root /app/mlartifacts2
+    env_file: ../conf/env/env_local.sh
+    ports:
+      - "5000:5000"
+    volumes:
+      - ../storage/mlflow:/app
+    profiles: [ local, prod ]
+    working_dir: /app
+
+  optuna-dashboard:
+    image: ghcr.io/optuna/optuna-dashboard
+    command: postgresql://${OPTUNA_DB_USER}:${OPTUNA_DB_PASSWORD}@postgres/optuna
+    env_file: ../conf/env/env_local.sh
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+    profiles: [ local ]
+    volumes:
+      - ../storage/optuna:/app
+  
+  minio:
+    image: quay.io/minio/minio
+    command: server --console-address ":9001" /data
+    env_file: ../conf/env/env_local.sh  
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    profiles: [ local ] 
+    volumes:
+      - ../storage/minio:/app
+    

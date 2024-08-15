@@ -1,10 +1,9 @@
 optuna: network, prning, objective as class, mlflow- track all models
-dane:
-* feature store
-* bezposrednio z kaggle
-deployment:
-* mlflow serve
-* streamlit app
+
+deployment as docker -> aws? 
+minio -> s3a
+make app available in the Internet
+evidently?
 sphinx, riff, annotations
 
 

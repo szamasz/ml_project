@@ -35,6 +35,7 @@ def main(config_file,experiment_name, number_of_trials, prune, sampler):
     optuna_logging.set_verbosity(optuna_logging.WARNING) 
     prune = True if prune == "True" else False
     sampler = RandomSampler() if sampler == "Random" else TPESampler()
+    optuna_storage_db = "storage/optuna/sqlite:///apartments-optuna.sqlite3"
 
     pruner = NopPruner
     if prune:
@@ -62,7 +63,7 @@ def main(config_file,experiment_name, number_of_trials, prune, sampler):
 
     X_train, X_val, y_train, y_val, num_columns, cat_columns, columns, target = prepare_data(config)
 
-    study = create_study(study_name=experiment_name, direction='maximize', pruner=pruner, sampler=sampler, storage="sqlite:///mlflow_runs.sqlite3", load_if_exists  = True)
+    study = create_study(study_name=experiment_name, direction='maximize', pruner=pruner, sampler=sampler, storage=optuna_storage_db, load_if_exists  = True)
     study.optimize(lambda trial: objective(trial, X_train, y_train,config,prune, numerical_columns=num_columns, categorical_columns=cat_columns), callbacks=[best_model_callback], n_trials=number_of_trials)
     
     print(f"Best mape score on training data: {float(study.best_value)*(-1)}")
