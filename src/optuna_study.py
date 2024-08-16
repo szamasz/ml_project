@@ -35,7 +35,7 @@ def main(config_file,experiment_name, number_of_trials, prune, sampler):
     optuna_logging.set_verbosity(optuna_logging.WARNING) 
     prune = True if prune == "True" else False
     sampler = RandomSampler() if sampler == "Random" else TPESampler()
-    optuna_storage_db = "storage/optuna/sqlite:///apartments-optuna.sqlite3"
+    optuna_storage_db = "postgresql://optunauser:optunapassword@postgres/optuna"
 
     pruner = NopPruner
     if prune:

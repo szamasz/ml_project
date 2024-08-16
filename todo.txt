@@ -14,7 +14,7 @@ mlflow
 zaladuj dane bezposrednio z kaggle
 polars zamias pandas?
 
-
+psz-test
 Optuna:
 trenowanie na 1 miesiacu z osobna? czy jakies zaleznosci w stosunku do poprzedniego miesiaca? dotrenowanie?
 nazwy kolumn w kolejnym kroku, wspoldzialanie ("missing_indicator", MissingIndicator()), z pca

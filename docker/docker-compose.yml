@@ -27,7 +27,7 @@ services:
     image: bitnami/mlflow #prefered to vendor's image because it supports sqlalchemy backends which makes use of postgresql possible
     depends_on:
       - postgres
-    command: /opt/bitnami/python/bin/mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri postgresql://${MLFLOW_DB_USER}:${MLFLOW_DB_PASSWORD}@postgres/mlflow --default-artifact-root /app/mlartifacts2
+    command: /opt/bitnami/python/bin/mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri postgresql://${MLFLOW_DB_USER}:${MLFLOW_DB_PASSWORD}@postgres/mlflow --default-artifact-root s3://mlflow
     env_file: ../conf/env/env_local.sh
     ports:
       - "5000:5000"
@@ -58,4 +58,17 @@ services:
     profiles: [ local ] 
     volumes:
       - ../storage/minio:/app
-    
+  
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      - minio
+    env_file: ../conf/env/env_local.sh
+    profiles: [ local ]
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
+      /usr/bin/mc mb myminio/mlflow;
+      /usr/bin/mc policy set public myminio/mlflow;
+      exit 0;
+      "
