@@ -27,7 +27,10 @@ services:
     image: bitnami/mlflow #prefered to vendor's image because it supports sqlalchemy backends which makes use of postgresql possible
     depends_on:
       - postgres
-    command: /opt/bitnami/python/bin/mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri postgresql://${MLFLOW_DB_USER}:${MLFLOW_DB_PASSWORD}@postgres/mlflow --default-artifact-root s3://mlflow
+    command: >
+      /opt/bitnami/python/bin/mlflow server --host 0.0.0.0 --port 5000 
+      --backend-store-uri postgresql://${MLFLOW_DB_USER}:${MLFLOW_DB_PASSWORD}@postgres/mlflow 
+      --default-artifact-root mlflow-artifacts:/ --artifacts-destination s3://mlflow --serve-artifacts
     env_file: ../conf/env/env_local.sh
     ports:
       - "5000:5000"
