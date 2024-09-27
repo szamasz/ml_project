@@ -2,6 +2,7 @@ from optuna import Trial
 
 from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor
 from sklearn.linear_model import LinearRegression
+from mlproject.optunasetup.lib.exceptions import UnsupportedAlgorithm
 
 def init_random_forest(trial : Trial) -> RandomForestRegressor:
   params = {
@@ -48,5 +49,7 @@ def init_learner(trial : Trial) -> Classifier:
     model = init_random_forest(trial)
   elif algorithm=='extra_forest':
     model = init_extra_forest(trial)
+  else:
+    raise UnsupportedAlgorithm(f"Algorithm_name: {algorithm}")
   
   return model

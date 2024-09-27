@@ -1,16 +1,17 @@
 import pandas as pd
 from optuna import create_study
-from lib.optuna.objective import objective
-from lib.utils import prepare_data, save_best_study
+from mlproject.optunasetup.objective import objective
+from mlproject.optunasetup.lib.utils import prepare_data, save_best_study
 from sklearn import set_config
 from optuna import logging as optuna_logging
 from optuna.pruners import MedianPruner, NopPruner
 import logging
-from lib.utils import load_config
+from mlproject.optunasetup.lib.utils import load_config
 import math
 import click
 from optuna.samplers import RandomSampler,TPESampler
-
+from mlproject.etl_data import process_data
+import mlflow
 
 logger = logging.getLogger(__name__)
 
@@ -30,13 +31,18 @@ def best_model_callback(study, trial):
 @click.option('--number_of_trials', type=click.INT, default=1, required=True)
 @click.option("--prune", type=click.STRING, required=False)
 @click.option("--sampler", type=click.STRING, required=False)
-def main(config_file,experiment_name, number_of_trials, prune, sampler):
+@click.option("--preprocess_data",is_flag=True, help="Reprocess data before training")
+def main(config_file,experiment_name, number_of_trials, prune, sampler, preprocess_data):
     set_config(transform_output="default")
     optuna_logging.set_verbosity(optuna_logging.WARNING) 
     prune = True if prune == "True" else False
     sampler = RandomSampler() if sampler == "Random" else TPESampler()
     optuna_storage_db = "postgresql://optunauser:optunapassword@localhost:5432/optuna"
-
+    
+    if preprocess_data:
+        print(f"""Reprocessing of input data""")
+        process_data()
+    
     pruner = NopPruner
     if prune:
         min_trials = math.ceil(number_of_trials/10)
@@ -68,7 +74,8 @@ def main(config_file,experiment_name, number_of_trials, prune, sampler):
     
     print(f"Best mape score on training data: {float(study.best_value)*(-1)}")
 
-    save_best_study(study,experiment_name,X_train, y_train, X_val, y_val, columns, target)
+    with mlflow.start_run():
+        save_best_study(study,experiment_name,X_train, y_train, X_val, y_val, columns, target, mlflow)
 
 
 if __name__ == '__main__':

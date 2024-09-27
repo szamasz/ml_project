@@ -1,12 +1,9 @@
 from optuna import Trial
-from lib.utils import load_config
-
-
-
 
 def choose_columns(config, all_columns : list[str]):
     
     dataset = list(config.keys())[0]
+
     #print(config)
     #print(f'config {config}')
     exclude_columns = config[dataset].get('exclude_columns',[]) or []

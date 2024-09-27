@@ -5,7 +5,7 @@ from sklearn.metrics import mean_absolute_percentage_error, make_scorer
 from pandas import DataFrame, Series
 import numpy as np
 import pickle
-from lib.optuna.pipeline import init_model
+from mlproject.optunasetup.pipeline import init_model
 from sklearn.model_selection import train_test_split
 from optuna import TrialPruned
 import base64

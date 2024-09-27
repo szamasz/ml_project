@@ -39,6 +39,5 @@ def init_imputers(trial : Trial) -> Imputer:
     imputers.append(init_missing_indicator(trial))
 
   imputer_transformer = ('imputers', FeatureUnion(imputers))
-  
   return imputer_transformer
   #return imputer

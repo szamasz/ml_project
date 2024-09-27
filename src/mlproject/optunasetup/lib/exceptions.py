@@ -1,0 +1,2 @@
+class UnsupportedAlgorithm(Exception):
+    pass

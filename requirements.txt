@@ -19,3 +19,4 @@ optuna-dashboard
 streamlit
 pydantic
 click
+pytest

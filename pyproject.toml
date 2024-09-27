@@ -1,69 +1,19 @@
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
 
 [project]
-name = "ml_project"
+name = "mlproject"
+authors = [{name = "Piotr Szelemej"}]
 readme = "README.md"
-dynamic = ["dependencies", "version"]
+license = {file = "LICENSE"}
+classifiers = ["License :: OSI Approved :: MIT License"]
+version = "0.1.0"
+dynamic = ["description"]
 
 [project.scripts]
-ml-project = "ml_project.__main__:main"
-
-[project.entry-points."kedro.hooks"]
-
-[project.optional-dependencies]
-docs = [
-    "docutils<0.18.0",
-    "sphinx~=3.4.3",
-    "sphinx_rtd_theme==0.5.1",
-    "nbsphinx==0.8.1",
-    "sphinx-autodoc-typehints==1.11.1",
-    "sphinx_copybutton==0.3.1",
-    "ipykernel>=5.3, <7.0",
-    "Jinja2<3.1.0",
-    "myst-parser~=0.17.2",
-]
-
-[tool.setuptools.dynamic]
-dependencies = {file = "requirements.txt"}
-version = {attr = "ml_project.__version__"}
-
-[tool.setuptools.packages.find]
-where = ["src"]
-namespaces = false
-
-[tool.kedro]
-package_name = "ml_project"
-project_name = "ml-project"
-kedro_init_version = "0.19.2"
-tools = ['Linting', 'Testing', 'Custom Logging', 'Documentation', 'Data Structure', 'Kedro Viz']
-example_pipeline = "False"
-source_dir = "src"
+experiment = "mlproject.cli:main"
 
 [tool.pytest.ini_options]
 addopts = """
---cov-report term-missing \
---cov src/ml_project -ra"""
-
-[tool.coverage.report]
-fail_under = 0
-show_missing = true
-exclude_lines = ["pragma: no cover", "raise NotImplementedError"]
-
-[tool.ruff.format]
-docstring-code-format = true
-
-[tool.ruff]
-line-length = 88
-show-fixes = true
-select = [
-    "F",   # Pyflakes
-    "W",   # pycodestyle
-    "E",   # pycodestyle
-    "I",   # isort
-    "UP",  # pyupgrade
-    "PL",  # Pylint
-    "T201", # Print Statement
-]
-ignore = ["E501"]  # Ruff format takes care of line-too-long
+--ignore=storage"""
