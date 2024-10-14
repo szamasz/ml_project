@@ -20,3 +20,4 @@ streamlit
 pydantic
 click
 pytest
+pytest-mock
