@@ -1,0 +1,19 @@
+STORAGE_DIR: ../tests/integration_tests/storage-tests
+PGDATA: /var/lib/postgresql/data/pgdata
+POSTGRES_PORT : 15432 
+PGADMIN_PORT  : 15050 
+MLFLOW_PORT   : 15000 
+OPTUNA_PORT   : 18080
+
+POSTGRES_USER: admin
+POSTGRES_PASSWORD: root
+POSTGRES_DB: postgres
+
+PGADMIN_DEFAULT_EMAIL: admin@admin.com
+PGADMIN_DEFAULT_PASSWORD: root
+
+OPTUNA_DB_USER: optunauser
+OPTUNA_DB_PASSWORD: optunapassword
+
+MLFLOW_DB_USER: mlflowuser
+MLFLOW_DB_PASSWORD: test

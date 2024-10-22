@@ -1,24 +1,17 @@
-COMPOSE_PROFILES=local
+#export COMPOSE_PROFILES=local
+export ENV_VAR=local
 
-POSTGRES_USER: admin
-POSTGRES_PASSWORD: root
-POSTGRES_DB: postgres
-PGDATA: /var/lib/postgresql/data/pgdata
+FULL_PATH_TO_SCRIPT="$(realpath "${BASH_SOURCE}")"
+DIRNAME="$(dirname "$FULL_PATH_TO_SCRIPT")"
 
+source $DIRNAME/secrets_local
+envsubst < $DIRNAME/env_docker_local_template > $DIRNAME/env_docker_local
 
-PGADMIN_DEFAULT_EMAIL: admin@admin.com
-PGADMIN_DEFAULT_PASSWORD: root
+export MLFLOW_TRACKING_URI=http://localhost:5000
+export MLFLOW_ARTIFACT_URI=http://localhost:5000
 
-OPTUNA_DB_USER: optunauser
-OPTUNA_DB_PASSWORD: optunapassword
+POSTGRES_PORT="${POSTGRES_PORT:-5432}" 
+export OPTUNA_DB_URI="postgresql://$OPTUNA_DB_USER:$OPTUNA_DB_PASSWORD@localhost:$POSTGRES_PORT/optuna"
 
-MINIO_ROOT_USER: ukjwf5mzmFJ2An00HCMC
-MINIO_ROOT_PASSWORD: xDUoCBXUODriX40nCZmJIVnjtwgdnMA8UCuOfTY1
-MINIO_DEFAULT_BUCKETS: mlflow
-
-MLFLOW_DB_USER: mlflowuser
-MLFLOW_DB_PASSWORD: test
-AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER}
-AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}
-MLFLOW_S3_ENDPOINT_URL=http://minio:9000
-MLFLOW_S3_IGNORE_TLS=true
+#mlflow server --port 5000 2>&1 &>logs/mlflow_ui.log --backend-store-uri sqlite:///ml_project-mlruns.db &
+#optuna-dashboard sqlite:///apartments-optuna.sqlite3 2>&1 &>logs/optuna_ui.log &

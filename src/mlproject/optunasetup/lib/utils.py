@@ -35,7 +35,7 @@ def load_raw_data(dataset):
         df.name = dataset
     return df
 
-def load_config(file = "optuna-config.yml"):
+def load_config(file = "optuna-config.yml", is_test_run=False):
     """Function loads configuration from the file
 
     Args:
@@ -44,12 +44,15 @@ def load_config(file = "optuna-config.yml"):
     Returns:
         Config dictionary 
     """
-    conf_file = cur_dir + '/conf/base/' + file 
+    path = '/conf/base/'
+    if is_test_run:
+        path = '/tests/integration_tests' + path
+    conf_file = cur_dir + path + file 
     with open(conf_file, 'r') as f:
         return yaml.safe_load(f)['sources']
     
 
-def load_data(dataset):
+def load_data(dataset, is_test_run = False):
     """Loads data from input files and returns it as Pandas Dataframe
 
     Args:
@@ -63,7 +66,10 @@ def load_data(dataset):
         pd.DataFrame: DataFrame with data
     """
 
-    data_dir = cur_dir+'/data/05_model_input'
+    path = '/data'
+    if is_test_run:
+        path = '/tests/integration_tests' + path
+    data_dir = cur_dir+path
     filename = data_dir+'/'+dataset+".csv"
     try:
         df = pd.read_csv(filename)
@@ -73,12 +79,12 @@ def load_data(dataset):
     df.name = dataset
     return df
 
-def prepare_data(config, train_split_ratio = 0.2, random_stage = 14):
+def prepare_data(config, train_split_ratio = 0.2, random_stage = 14, is_test_run = False):
 
     from sklearn.model_selection import train_test_split
 
     dataset = list(config.keys())[0]
-    df = load_data(dataset)
+    df = load_data(dataset, is_test_run)
     target = config[dataset]['target']
     X = df.drop(target, axis =1)
     y = df[target]
@@ -141,7 +147,6 @@ def save_best_study(study, experiment_name, X_train, y_train, X_val, y_val, colu
     #with mlflow.start_run(run_name=str(study.best_trial.number)):
     #mlflow.set_experiment(experiment_name)
     
-    print(f"HERE1")
     mlflow.log_params(study.best_trial.params)
     mlflow.log_params({"target": target} )
     mlflow.log_metrics({"train_mape": study.best_trial.value*(-1)})
@@ -151,17 +156,9 @@ def save_best_study(study, experiment_name, X_train, y_train, X_val, y_val, colu
 
     #print(f"best trial items: {study.best_trial.params.items()}")
     
-    print(columns)
-    print(study.best_trial.params)
-    
-    print(X_train.columns)
-    print(y_val)
-
     best_model = study.user_attrs['best_model']
 
     mlflow.log_params({"hash": sha256(best_model.encode('utf-8')).hexdigest()[:1024]} )
-    print(sha256(best_model.encode('utf-8')).hexdigest()[:1024])
-    print(best_model.encode('ascii'))
     #model_bytes = bytes.fromhex(best_model)
 
     X_train_selected,X_val_selected = get_reduced_features(X_train, X_val, study.best_trial.params,columns)

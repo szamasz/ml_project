@@ -12,4 +12,4 @@ def process_data():
 
     df_apartments_1[df_apartments_1.select_dtypes("object").columns.to_list()]  = df_apartments_1[df_apartments_1.select_dtypes("object").columns.to_list()].astype('category')
 
-    df_apartments_1.to_csv("data/05_model_input/apartments.csv", index=False)
+    df_apartments_1.to_csv("data/apartments.csv", index=False)
