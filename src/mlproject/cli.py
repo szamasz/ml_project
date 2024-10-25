@@ -41,7 +41,10 @@ def main(config_file,experiment_name, number_of_trials, prune, sampler, preproce
     optuna_storage_db = os.getenv("OPTUNA_DB_URI")
     if not optuna_storage_db:
         raise Exception("Missing db storage for optuna")
-   
+    #"postgresql://optunauser:optunapassword@localhost:5432/optuna"
+    
+    print(f"DBURI: {optuna_storage_db}")
+    
     is_test_run = os.getenv("INTEGRATION_TEST",False) == '1'
 
     if preprocess_data:

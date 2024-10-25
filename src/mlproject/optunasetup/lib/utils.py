@@ -147,6 +147,7 @@ def save_best_study(study, experiment_name, X_train, y_train, X_val, y_val, colu
     #with mlflow.start_run(run_name=str(study.best_trial.number)):
     #mlflow.set_experiment(experiment_name)
     
+    print(f">>HERE: {study.best_trial.params}")
     mlflow.log_params(study.best_trial.params)
     mlflow.log_params({"target": target} )
     mlflow.log_metrics({"train_mape": study.best_trial.value*(-1)})

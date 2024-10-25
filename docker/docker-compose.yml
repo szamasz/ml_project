@@ -6,6 +6,8 @@ services:
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     env_file: ../conf/env/env_docker_$ENV_VAR
+    environment:
+      - ENV_VAR
     profiles: [local, test]
     volumes:
       - $STORAGE_DIR/postgres:/var/lib/postgresql/data:z
@@ -59,10 +61,10 @@ services:
     image: quay.io/minio/minio
     command: server --console-address ":9001" /data
     env_file: ../conf/env/env_docker_$ENV_VAR
-    profiles: [local]
+    profiles: [local, test]
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "${MINIO_PORT1:-9000}:9000"
+      - "${MINIO_PORT2:-9001}:9001"
     volumes:
       - $STORAGE_DIR/minio:/app
   
@@ -72,7 +74,7 @@ services:
     depends_on:
       - minio
     env_file: ../conf/env/env_docker_$ENV_VAR
-    profiles: [local]
+    profiles: [local, test]
     entrypoint: >
       /bin/sh -c "
       /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};

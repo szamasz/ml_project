@@ -1,3 +1,4 @@
+#!/bin/bash -x
 #export COMPOSE_PROFILES=test
 export ENV_VAR=test
 
@@ -8,10 +9,12 @@ source $DIRNAME/secrets_test
 
 envsubst < $DIRNAME/env_docker_test_template > $DIRNAME/env_docker_test
 
+source $DIRNAME/env_docker_test
+
 export MLFLOW_TRACKING_URI=http://localhost:15000
 export MLFLOW_ARTIFACT_URI=http://localhost:15000
 
-POSTGRES_PORT="${POSTGRES_PORT:-5432}" 
+#POSTGRES_PORT="${POSTGRES_PORT:-5432}" 
 export OPTUNA_DB_URI="postgresql://$OPTUNA_DB_USER:$OPTUNA_DB_PASSWORD@localhost:$POSTGRES_PORT/optuna"
 
 

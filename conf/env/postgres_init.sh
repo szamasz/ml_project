@@ -1,5 +1,5 @@
-if !([ "$COMPOSE_PROFILES" == "local" ] || [ "$COMPOSE_PROFILES" == "prod" ]); then
-    echo "Invalid environment name: $COMPOSE_PROFILES"
+if !([ "$ENV_VAR" == "local" ] || [ "$ENV_VAR" == "test" ]); then
+    echo "Invalid environment name: $ENV_VAR"
     exit 1
 fi
 
@@ -13,8 +13,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname mlflow <<-EOSQL
     GRANT ALL ON SCHEMA public TO $MLFLOW_DB_USER;
 EOSQL
 
-if [ "$COMPOSE_PROFILES" == "local" ]; then
-  echo "Installing optuna db"
+echo "Installing optuna db"
   psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     CREATE USER $OPTUNA_DB_USER with encrypted password '$OPTUNA_DB_PASSWORD';
     CREATE DATABASE optuna;
@@ -23,4 +22,3 @@ EOSQL
     psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname optuna <<-EOSQL
         GRANT ALL ON SCHEMA public TO $OPTUNA_DB_USER;
 EOSQL
-fi
