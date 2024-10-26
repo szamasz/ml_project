@@ -6,7 +6,8 @@ from ydata_profiling import ProfileReport
 
 cur_dir = os.path.abspath(os.curdir)
 
-def load_config(file = "config.yml"):
+
+def load_config(file="config.yml"):
     """Function loads configuration from the file
 
     Args:
@@ -22,7 +23,7 @@ def load_config(file = "config.yml"):
         return yaml.safe_load(f)
 
 
-def load_data(config, dataset, full = True):
+def load_data(config, dataset, full=True):
     """Loads data from input files and returns it as Pandas Dataframe
 
     Args:
@@ -39,7 +40,7 @@ def load_data(config, dataset, full = True):
         pd.DataFrame: DataFrame with data
 
     """
-    data_dir = cur_dir+"/../data/01_raw/apartments/"
+    data_dir = cur_dir + "/../data/01_raw/apartments/"
     df_files = []
     try:
         files = config["sources"][dataset]["files"]
@@ -48,7 +49,7 @@ def load_data(config, dataset, full = True):
         raise Exception("Failure")
     for f in files:
         try:
-            df = pd.read_csv(data_dir+f)
+            df = pd.read_csv(data_dir + f)
             df_files.append(df)
         except FileNotFoundError:
             print(f"File {data_dir}{f} not found")
@@ -57,13 +58,14 @@ def load_data(config, dataset, full = True):
         df_res = pd.concat(df_files, axis=0, ignore_index=True)
     else:
         df_res = pd.concat(df_files[0:1], axis=0, ignore_index=True)
-        #df_res = pd.concat(df_files[-1], axis=0, ignore_index=True)
+        
     df_res.name = dataset
     return df_res
 
+
 def generate_profile(df):
     cur_dir = os.path.abspath(os.curdir)
-    data_dir = cur_dir+"/../docs/"
+    data_dir = cur_dir + "/../docs/"
     """Generates Pandas profile to the file
 
     Args:

@@ -17,6 +17,9 @@ echo "OPTUNA_DB_URI" $OPTUNA_DB_URI
 
 $PYTHON_BIN -m mlproject --config_file=apartments_selected_columns.yml --experiment_name=apartments_selected_columns_linear --number_of_trials=10 --sampler=Random
 
+echo "WAIT 10 seconds"
+sleep 10
+
 $PYTHON_BIN $TEST_DIR/test_model.py
 
 

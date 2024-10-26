@@ -12,6 +12,7 @@ from sklearn.metrics import mean_absolute_percentage_error
 
 cur_dir = os.path.abspath(os.curdir)
 
+
 def load_raw_data(dataset):
     """Loads data from input files and returns it as Pandas Dataframe
 
@@ -29,15 +30,16 @@ def load_raw_data(dataset):
         pd.DataFrame: DataFrame with data
 
     """
-    data_dir = cur_dir+"/data/01_raw/"+dataset+"/"
+    data_dir = cur_dir + "/data/01_raw/" + dataset + "/"
 
     files = ["apartments_pl_2023_08.csv.zip"]
     for f in files:
-        df = pd.read_csv(data_dir+f)
+        df = pd.read_csv(data_dir + f)
         df.name = dataset
     return df
 
-def load_config(file = "optuna-config.yml", is_test_run=False):
+
+def load_config(file="optuna-config.yml", is_test_run=False):
     """Function loads configuration from the file
 
     Args:
@@ -57,7 +59,7 @@ def load_config(file = "optuna-config.yml", is_test_run=False):
         return yaml.safe_load(f)["sources"]
 
 
-def load_data(dataset, is_test_run = False):
+def load_data(dataset, is_test_run=False):
     """Loads data from input files and returns it as Pandas Dataframe
 
     Args:
@@ -77,8 +79,8 @@ def load_data(dataset, is_test_run = False):
     path = "/data"
     if is_test_run:
         path = "/tests/integration_tests" + path
-    data_dir = cur_dir+path
-    filename = data_dir+"/"+dataset+".csv"
+    data_dir = cur_dir + path
+    filename = data_dir + "/" + dataset + ".csv"
     try:
         df = pd.read_csv(filename)
     except FileNotFoundError:
@@ -87,31 +89,32 @@ def load_data(dataset, is_test_run = False):
     df.name = dataset
     return df
 
-def prepare_data(config, train_split_ratio = 0.2, random_stage = 14, is_test_run = False):
 
+def prepare_data(config, train_split_ratio=0.2, random_stage=14, is_test_run=False):
     from sklearn.model_selection import train_test_split
 
     dataset = list(config.keys())[0]
     df = load_data(dataset, is_test_run)
     target = config[dataset]["target"]
-    X = df.drop(target, axis =1)
+    X = df.drop(target, axis=1)
     y = df[target]
 
-    X[X.select_dtypes("object").columns.to_list()]  = X[X.select_dtypes("object").columns.to_list()].astype("category")
+    X[X.select_dtypes("object").columns.to_list()] = X[X.select_dtypes("object").columns.to_list()].astype("category")
     num_columns = list(X.select_dtypes("number").columns.values)
     cat_columns = X.select_dtypes("category").columns.to_list()
-    X_train, X_val, y_train, y_val = train_test_split(X,y,test_size=train_split_ratio, random_state=random_stage)
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=train_split_ratio, random_state=random_stage)
 
-    return  X_train, X_val, y_train, y_val, num_columns, cat_columns, X.columns.values, target
+    return X_train, X_val, y_train, y_val, num_columns, cat_columns, X.columns.values, target
 
-def log_plots(study,mlflow):
+
+def log_plots(study, mlflow):
     figure = None
     try:
         figure = plot_param_importances(study)
     except:
         pass
     if figure:
-        mlflow.log_figure(figure,"param_importances.html")
+        mlflow.log_figure(figure, "param_importances.html")
 
     figure = None
     try:
@@ -119,24 +122,26 @@ def log_plots(study,mlflow):
     except:
         pass
     if figure:
-        mlflow.log_figure(figure,"optimization_history.html")
+        mlflow.log_figure(figure, "optimization_history.html")
 
-def get_reduced_features(X_train, X_val, params,columns):
-    columns_to_drop = [ k for k,v in params.items() if k in columns and v == False ]
-    X_train_selected = X_train.drop(columns_to_drop, axis = 1)
-    X_val_selected = X_val.drop(columns_to_drop, axis = 1)
+
+def get_reduced_features(X_train, X_val, params, columns):
+    columns_to_drop = [k for k, v in params.items() if k in columns and v == False]
+    X_train_selected = X_train.drop(columns_to_drop, axis=1)
+    X_val_selected = X_val.drop(columns_to_drop, axis=1)
     print(f"Following columns are dropped in final model: {','.join(columns_to_drop)}")
     return X_train_selected, X_val_selected
 
-def evaluate_model(best_model,X_train_selected,X_val_selected,y_train,y_val):
 
+def evaluate_model(best_model, X_train_selected, X_val_selected, y_train, y_val):
     model_bytes = base64.b64decode(best_model.encode("ascii"))
     pipeline = pickle.loads(model_bytes)
-    pipeline.fit(X_train_selected,y_train)
+    pipeline.fit(X_train_selected, y_train)
     y_pred = pipeline.predict(X_val_selected)
     signature = infer_signature(X_train_selected, y_pred)
     validation_mape = mean_absolute_percentage_error(y_val, y_pred)
-    return pipeline,signature,validation_mape
+    return pipeline, signature, validation_mape
+
 
 def save_best_study(study, experiment_name, X_train, y_train, X_val, y_val, columns, target, mlflow):
     """Function registers sucessfful study results to MLFlow
@@ -154,40 +159,41 @@ def save_best_study(study, experiment_name, X_train, y_train, X_val, y_val, colu
         mlflow (Mlfow): mlflow object for registering training results in MLFlow
 
     """
-    #with mlflow.start_run(run_name=str(study.best_trial.number)):
-    #mlflow.set_experiment(experiment_name)
+    
+    
 
     mlflow.log_params(study.best_trial.params)
-    mlflow.log_params({"target": target} )
-    mlflow.log_metrics({"train_mape": study.best_trial.value*(-1)})
+    mlflow.log_params({"target": target})
+    mlflow.log_metrics({"train_mape": study.best_trial.value * (-1)})
 
-    #Log plots to MLfLow
-    log_plots(study,mlflow)
+    
+    log_plots(study, mlflow)
 
-    #print(f"best trial items: {study.best_trial.params.items()}")
+    
 
     best_model = study.user_attrs["best_model"]
 
-    mlflow.log_params({"hash": sha256(best_model.encode("utf-8")).hexdigest()[:1024]} )
-    #model_bytes = bytes.fromhex(best_model)
+    mlflow.log_params({"hash": sha256(best_model.encode("utf-8")).hexdigest()[:1024]})
+    
 
-    X_train_selected,X_val_selected = get_reduced_features(X_train, X_val, study.best_trial.params,columns)
+    X_train_selected, X_val_selected = get_reduced_features(X_train, X_val, study.best_trial.params, columns)
 
-
-    pipeline,signature,validation_mape = evaluate_model(best_model,X_train_selected,X_val_selected,y_train,y_val)
+    pipeline, signature, validation_mape = evaluate_model(best_model, X_train_selected, X_val_selected, y_train, y_val)
     mlflow.log_metrics({"validation_mape": validation_mape})
-    model_info = mlflow.sklearn.log_model(pipeline,artifact_path="ml_project", signature=signature, registered_model_name=experiment_name)
-    #print(model_info.model_uri)
+    model_info = mlflow.sklearn.log_model(
+        pipeline, artifact_path="ml_project", signature=signature, registered_model_name=experiment_name,
+    )
+    
+
 
 def save_best_study2(study, name, X_train, y_train, X_val, y_val):
-
     old_model_f = Path(name + ".pkl")
 
     if old_model_f.is_file():
-        with open(name + ".pkl","rb") as f:
+        with open(name + ".pkl", "rb") as f:
             old_pipeline = pickle.load(f)
 
-        old_pipeline.fit(X_train,y_train)
+        old_pipeline.fit(X_train, y_train)
         y_pred = old_pipeline.predict(X_val)
         mape = mean_absolute_percentage_error(y_val, y_pred)
         print(f"Validation score of the saved model(mape): {mape}")
@@ -197,11 +203,11 @@ def save_best_study2(study, name, X_train, y_train, X_val, y_val):
     model_bytes = bytes.fromhex(study.user_attrs["best_model"])
     pipeline = pickle.loads(model_bytes)
 
-    pipeline.fit(X_train,y_train)
+    pipeline.fit(X_train, y_train)
     y_pred = pipeline.predict(X_val)
     mape = mean_absolute_percentage_error(y_val, y_pred)
     print(f"Validation score(mape): {mape}")
     inpt = input("Is this model good enough? [Y/N] ")
     if inpt.lower() == "y":
-        with open(name + ".pkl","wb") as f:
+        with open(name + ".pkl", "wb") as f:
             f.write(model_bytes)

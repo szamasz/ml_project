@@ -21,22 +21,29 @@ class PCA_Transform(BaseEstimator, TransformerMixin):
     def __init__(self, all_columns):
         config = load_config()
         self.pca_threshold = config["sources"]["apartments"]["pca"]["threshold"]
-        self.pca_columns = ["num_cols__"+col for col in config["sources"]["apartments"]["pca"]["columns"]]
+        self.pca_columns = ["num_cols__" + col for col in config["sources"]["apartments"]["pca"]["columns"]]
         self.pca = PCA(self.pca_threshold)
         self.all_columns = all_columns
 
-    def fit(self,  X, y=None):
-        Xpd = pd.DataFrame(data=X, columns = self.all_columns)
-        X_pca =Xpd.loc[:,self.pca_columns]
+    def fit(self, X, y=None):
+        Xpd = pd.DataFrame(data=X, columns=self.all_columns)
+        X_pca = Xpd.loc[:, self.pca_columns]
         self.pca.fit(X_pca)
         return self
 
     def transform(self, X, y=None):
-        Xpd = pd.DataFrame(data=X, columns = self.all_columns)
-        X_pca =Xpd.loc[:,self.pca_columns]
+        Xpd = pd.DataFrame(data=X, columns=self.all_columns)
+        X_pca = Xpd.loc[:, self.pca_columns]
         X_nopca = Xpd.drop(self.pca_columns, axis=1)
         X_pca_transformed = self.pca.transform(X_pca)
-        X_final = pd.concat([X_nopca,pd.DataFrame(data=X_pca_transformed,columns=[f"PC{i+1}" for i in range(len(self.pca.explained_variance_ratio_))])], axis=1)
+        X_final = pd.concat(
+            [
+                X_nopca,
+                pd.DataFrame(
+                    data=X_pca_transformed, columns=[f"PC{i+1}" for i in range(len(self.pca.explained_variance_ratio_))],
+                ),
+            ],
+            axis=1,
+        )
         X_final.reset_index(drop=True, inplace=True)
-        return pd.DataFrame(X_final) #.to_numpy()
-
+        return pd.DataFrame(X_final)  

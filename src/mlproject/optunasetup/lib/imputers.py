@@ -2,42 +2,43 @@ from optuna import Trial
 from sklearn.impute import KNNImputer, MissingIndicator, SimpleImputer
 from sklearn.pipeline import FeatureUnion
 
-Imputer = (
-  KNNImputer |
-  SimpleImputer
-)
+Imputer = KNNImputer | SimpleImputer
 
-def init_knn_imputer(trial : Trial) -> Imputer:
-  return  ("imputer", KNNImputer(n_neighbors=5))
-  #return  KNNImputer(n_neighbors=5)
 
-def init_simple_imputer(trial : Trial) -> Imputer:
-  return ("imputer", SimpleImputer())
-  #return SimpleImputer()
+def init_knn_imputer(trial: Trial) -> Imputer:
+    return ("imputer", KNNImputer(n_neighbors=5))
+    
 
-def init_missing_indicator(trial : Trial) -> Imputer:
-  return ("imputer_missing_indicator", MissingIndicator())
+def init_simple_imputer(trial: Trial) -> Imputer:
+    return ("imputer", SimpleImputer())
+    
 
-def init_imputers(trial : Trial) -> Imputer:
-  method = trial.suggest_categorical(
-    "imputing_method", ["knn", "simple"],
-  )
-  missing = trial.suggest_categorical(
-    "indicate_missing", ["no","yes"],
-  )
+def init_missing_indicator(trial: Trial) -> Imputer:
+    return ("imputer_missing_indicator", MissingIndicator())
 
-  imputers = []
 
-  if method=="knn":
-    imputer = init_knn_imputer(trial)
-    imputers.append(init_knn_imputer(trial))
-  elif method=="simple":
-    imputer = init_simple_imputer(trial)
-    imputers.append(init_simple_imputer(trial))
+def init_imputers(trial: Trial) -> Imputer:
+    method = trial.suggest_categorical(
+        "imputing_method",
+        ["knn", "simple"],
+    )
+    missing = trial.suggest_categorical(
+        "indicate_missing",
+        ["no", "yes"],
+    )
 
-  if missing == "yes":
-    imputers.append(init_missing_indicator(trial))
+    imputers = []
 
-  imputer_transformer = ("imputers", FeatureUnion(imputers))
-  return imputer_transformer
-  #return imputer
+    if method == "knn":
+        imputer = init_knn_imputer(trial)
+        imputers.append(init_knn_imputer(trial))
+    elif method == "simple":
+        imputer = init_simple_imputer(trial)
+        imputers.append(init_simple_imputer(trial))
+
+    if missing == "yes":
+        imputers.append(init_missing_indicator(trial))
+
+    imputer_transformer = ("imputers", FeatureUnion(imputers))
+    return imputer_transformer
+    
