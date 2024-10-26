@@ -21,3 +21,5 @@ pydantic
 click
 pytest
 pytest-mock
+pre-commit
+ruff
