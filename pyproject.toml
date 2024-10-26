@@ -16,7 +16,8 @@ experiment = "mlproject.cli:main"
 
 [tool.pytest.ini_options]
 addopts = """
---ignore=storage"""
+--ignore=docker/storage-local
+--ignore=tests/integration_tests"""
 
 [tool.ruff]
 line-length = 120

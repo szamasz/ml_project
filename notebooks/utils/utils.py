@@ -1,7 +1,8 @@
-import yaml
-import pandas as pd
-from ydata_profiling import ProfileReport
 import os
+
+import pandas as pd
+import yaml
+from ydata_profiling import ProfileReport
 
 cur_dir = os.path.abspath(os.curdir)
 
@@ -9,34 +10,39 @@ def load_config(file = "config.yml"):
     """Function loads configuration from the file
 
     Args:
+    ----
         file (str, optional): Name of the file with configuration. Defaults to "config.yml".
 
     Returns:
-        Config dictionary 
+    -------
+        Config dictionary
+
     """
-    with open(file, 'r') as f:
+    with open(file) as f:
         return yaml.safe_load(f)
-    
+
 
 def load_data(config, dataset, full = True):
     """Loads data from input files and returns it as Pandas Dataframe
 
     Args:
+    ----
         config (dict): Project's configuration
         dataset (string): Which dataset needs to be loaded
 
     Raises:
+    ------
         Exception: Given dataset was not found in the config or file was not found in local directory
 
     Returns:
+    -------
         pd.DataFrame: DataFrame with data
-    """
 
-    
-    data_dir = cur_dir+'/../data/01_raw/apartments/'
+    """
+    data_dir = cur_dir+"/../data/01_raw/apartments/"
     df_files = []
     try:
-        files = config['sources'][dataset]['files']
+        files = config["sources"][dataset]["files"]
     except KeyError:
         print(f"Dataset {dataset} not found in config file")
         raise Exception("Failure")
@@ -57,7 +63,7 @@ def load_data(config, dataset, full = True):
 
 def generate_profile(df):
     cur_dir = os.path.abspath(os.curdir)
-    data_dir = cur_dir+'/../docs/'
+    data_dir = cur_dir+"/../docs/"
     """Generates Pandas profile to the file
 
     Args:
