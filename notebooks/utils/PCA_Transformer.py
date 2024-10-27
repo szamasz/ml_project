@@ -40,10 +40,11 @@ class PCA_Transform(BaseEstimator, TransformerMixin):
             [
                 X_nopca,
                 pd.DataFrame(
-                    data=X_pca_transformed, columns=[f"PC{i+1}" for i in range(len(self.pca.explained_variance_ratio_))],
+                    data=X_pca_transformed,
+                    columns=[f"PC{i+1}" for i in range(len(self.pca.explained_variance_ratio_))],
                 ),
             ],
             axis=1,
         )
         X_final.reset_index(drop=True, inplace=True)
-        return pd.DataFrame(X_final)  
+        return pd.DataFrame(X_final)

@@ -1,2 +1,2 @@
-"""Machine Learning project with use of mlflow and optuna
+"""Machine Learning project with use of mlflow and optuna.
 """

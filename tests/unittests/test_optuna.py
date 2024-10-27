@@ -6,6 +6,7 @@ from mlproject.optunasetup.lib import exceptions
 from mlproject.optunasetup.lib.algos import init_learner
 from mlproject.optunasetup.lib.columns import choose_columns
 from mlproject.optunasetup.lib.encoders import init_encoder
+from mlproject.optunasetup.lib.exceptions import InvalidColumnsSelectedException
 from mlproject.optunasetup.lib.imputers import init_imputers
 from mlproject.optunasetup.lib.utils import evaluate_model, get_reduced_features, save_best_study
 from optuna.trial import create_trial
@@ -119,7 +120,7 @@ all_columns = [
     ],
 )
 def test_column_selection_exceptions(config, all_columns, error_msg):
-    with pytest.raises(expected_exception=Exception, match=error_msg):
+    with pytest.raises(expected_exception=InvalidColumnsSelectedException, match=error_msg):
         choose_columns(config, all_columns)
 
 
@@ -439,7 +440,11 @@ def test_evaluate_model(get_dataframes, mocker):
 
     # Call the function being tested
     pipeline, signature, validation_mape = evaluate_model(
-        mock_best_model, X_train_selected, X_val_selected, y_train, y_val,
+        mock_best_model,
+        X_train_selected,
+        X_val_selected,
+        y_train,
+        y_val,
     )
 
     # Assert that the pipeline's methods are called correctly

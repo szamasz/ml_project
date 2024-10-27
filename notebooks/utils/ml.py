@@ -32,7 +32,7 @@ def fit_transform_display(model_class, X_train, y_train, X_test, y_test, model_k
 
 
 def best_run(cv_results_, threshold=0.05):
-    """Finds runs where not overfitting happened (train score - test score < threshould) and displays best scores and parameters
+    """Finds runs where not overfitting happened (train score - test score < threshould) and displays best scores and parameters.
 
     Args:
     ----

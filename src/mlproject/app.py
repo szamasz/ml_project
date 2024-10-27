@@ -10,10 +10,37 @@ current_year = datetime.now().year
 
 
 def get_model(name, alias="best"):
+    """Fetch model from mlfow based on provided name and alias.
+
+    Args:
+    ----
+        name (str): experimet name - provided to the app in the commandline
+        alias (str, optional): model alias to be fetched. Alias is asigned
+        manually to the best model in mlfow. Defaults to "best".
+
+    Returns:
+    -------
+        mflow.model: model object returned from mlfow artifacts
+
+    """
     return mlflow.pyfunc.load_model(f"models:/{name}@{alias}")
 
 
 def predict_from_data(name, input_df, alias="best"):
+    """Predict the target vaulue based on input values provided by user.
+
+    Args:
+    ----
+        name  (str): experimet name - provided to the app in the commandline
+        input_df (pd.DataFrame): input data provided by user
+        alias (str, optional):model alias to be fetched. Alias is asigned
+        manually to the best model in mlfow. Defaults to "best".
+
+    Returns:
+    -------
+        Tuple(float,float): Predicted value together with prediction error
+
+    """
     try:
         best_model = get_model(name, alias)
     except Exception:
@@ -40,6 +67,15 @@ class SelectedColumnsModel(BaseModel):
 @click.option("--run_name", type=click.STRING, required=True)
 @click.option("--alias", type=click.STRING, required=False)
 def app(run_name, alias):
+    """Streamlit application.
+
+    Args:
+    ----
+        run_name (str): experimet name - provided to the app in the commandline
+        alias (str, optional): model alias to be fetched. Alias is asigned
+        manually to the best model in mlfow. Defaults to "best".
+
+    """
     st.title("Apartment's price predictor")
     cols = ["city", "squareMeters", "centreDistance", "buildYear", "latitude", "longitude"]
     city = st.selectbox(

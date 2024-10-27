@@ -7,6 +7,7 @@ from pathlib import Path
 import pandas as pd
 import yaml
 from mlflow.models import infer_signature
+from mlproject.optunasetup.lib.exceptions import DatasetLoadingException
 from optuna.visualization import plot_optimization_history, plot_param_importances
 from sklearn.metrics import mean_absolute_percentage_error
 
@@ -14,7 +15,7 @@ cur_dir = os.path.abspath(os.curdir)
 
 
 def load_raw_data(dataset):
-    """Loads data from input files and returns it as Pandas Dataframe
+    """Loads data from input files and returns it as Pandas Dataframe.
 
     Args:
     ----
@@ -40,7 +41,7 @@ def load_raw_data(dataset):
 
 
 def load_config(file="optuna-config.yml", is_test_run=False):
-    """Function loads configuration from the file
+    """Function loads configuration from the file.
 
     Args:
     ----
@@ -60,7 +61,7 @@ def load_config(file="optuna-config.yml", is_test_run=False):
 
 
 def load_data(dataset, is_test_run=False):
-    """Loads data from input files and returns it as Pandas Dataframe
+    """Loads data from input files and returns it as Pandas Dataframe.
 
     Args:
     ----
@@ -84,8 +85,8 @@ def load_data(dataset, is_test_run=False):
     try:
         df = pd.read_csv(filename)
     except FileNotFoundError:
-        print(f"File data/{filename} not found")
-        raise Exception("Failure")
+        err_msg = f"File data/{filename} not found"
+        raise DatasetLoadingException(err_msg)
     df.name = dataset
     return df
 
@@ -144,7 +145,7 @@ def evaluate_model(best_model, X_train_selected, X_val_selected, y_train, y_val)
 
 
 def save_best_study(study, experiment_name, X_train, y_train, X_val, y_val, columns, target, mlflow):
-    """Function registers sucessfful study results to MLFlow
+    """Function registers sucessfful study results to MLFlow.
 
     Args:
     ----
@@ -159,31 +160,26 @@ def save_best_study(study, experiment_name, X_train, y_train, X_val, y_val, colu
         mlflow (Mlfow): mlflow object for registering training results in MLFlow
 
     """
-    
-    
-
     mlflow.log_params(study.best_trial.params)
     mlflow.log_params({"target": target})
     mlflow.log_metrics({"train_mape": study.best_trial.value * (-1)})
 
-    
     log_plots(study, mlflow)
-
-    
 
     best_model = study.user_attrs["best_model"]
 
     mlflow.log_params({"hash": sha256(best_model.encode("utf-8")).hexdigest()[:1024]})
-    
 
     X_train_selected, X_val_selected = get_reduced_features(X_train, X_val, study.best_trial.params, columns)
 
     pipeline, signature, validation_mape = evaluate_model(best_model, X_train_selected, X_val_selected, y_train, y_val)
     mlflow.log_metrics({"validation_mape": validation_mape})
     model_info = mlflow.sklearn.log_model(
-        pipeline, artifact_path="ml_project", signature=signature, registered_model_name=experiment_name,
+        pipeline,
+        artifact_path="ml_project",
+        signature=signature,
+        registered_model_name=experiment_name,
     )
-    
 
 
 def save_best_study2(study, name, X_train, y_train, X_val, y_val):

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from mlproject.optunasetup.lib.algos import init_learner
 from mlproject.optunasetup.lib.columns import init_columns
 from mlproject.optunasetup.lib.encoders import init_encoder
@@ -30,15 +32,11 @@ def init_categorical_pipeline(trial: Trial, columns: list[str] = None) -> Pipeli
 
 def init_model(trial: Trial, config, numerical_columns: list[str], categorical_columns: list[str]) -> ColumnTransformer:
     selected_numerical_columns = init_columns(trial, config, numerical_columns)
-    
-    
+
     selected_categorical_columns = init_columns(trial, config, categorical_columns)
-    
 
     numerical_pipeline = init_numerical_pipeline(trial, selected_numerical_columns)
     categorical_pipeline = init_categorical_pipeline(trial, selected_categorical_columns)
-
-    
 
     processor = ColumnTransformer(
         [

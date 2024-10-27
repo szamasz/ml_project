@@ -41,7 +41,8 @@ def main(config_file, experiment_name, number_of_trials, prune, sampler, preproc
     sampler = RandomSampler() if sampler == "Random" else TPESampler()
     optuna_storage_db = os.getenv("OPTUNA_DB_URI")
     if not optuna_storage_db:
-        raise Exception("Missing db storage for optuna")
+        err_msg = "Missing db storage for optuna"
+        raise Exception(err_msg)
     # "postgresql://optunauser:optunapassword@localhost:5432/optuna"
 
     print(f"DBURI: {optuna_storage_db}")
@@ -76,7 +77,8 @@ def main(config_file, experiment_name, number_of_trials, prune, sampler, preproc
     config = load_config(config_file, is_test_run)
 
     X_train, X_val, y_train, y_val, num_columns, cat_columns, columns, target = prepare_data(
-        config, is_test_run=is_test_run,
+        config,
+        is_test_run=is_test_run,
     )
 
     study = create_study(
@@ -89,7 +91,13 @@ def main(config_file, experiment_name, number_of_trials, prune, sampler, preproc
     )
     study.optimize(
         lambda trial: objective(
-            trial, X_train, y_train, config, prune, numerical_columns=num_columns, categorical_columns=cat_columns,
+            trial,
+            X_train,
+            y_train,
+            config,
+            prune,
+            numerical_columns=num_columns,
+            categorical_columns=cat_columns,
         ),
         callbacks=[best_model_callback],
         n_trials=number_of_trials,
