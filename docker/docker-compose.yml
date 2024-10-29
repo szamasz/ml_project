@@ -31,8 +31,8 @@ services:
     depends_on:
       - postgres
     command: >
-      /opt/bitnami/python/bin/mlflow server --host 0.0.0.0 --port 5000 
-      --backend-store-uri postgresql://${MLFLOW_DB_USER}:${MLFLOW_DB_PASSWORD}@postgres/mlflow 
+      /opt/bitnami/python/bin/mlflow server --host 0.0.0.0 --port 5000
+      --backend-store-uri postgresql://${MLFLOW_DB_USER}:${MLFLOW_DB_PASSWORD}@postgres/mlflow
       --default-artifact-root mlflow-artifacts:/ --artifacts-destination s3://mlflow --serve-artifacts
     env_file: ../conf/env/env_docker_$ENV_VAR
     profiles: [local, test]
@@ -55,7 +55,7 @@ services:
       - "${OPTUNA_PORT:-8080}:8080"
     volumes:
       - $STORAGE_DIR/optuna:/app
-  
+
   minio:
     container_name: minio_$ENV_VAR
     image: quay.io/minio/minio
@@ -67,7 +67,7 @@ services:
       - "${MINIO_PORT2:-9001}:9001"
     volumes:
       - $STORAGE_DIR/minio:/app
-  
+
   createbuckets:
     container_name: createbuckets_$ENV_VAR
     image: minio/mc

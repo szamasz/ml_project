@@ -1,37 +1,18 @@
-repos:repos:
+repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0  # Use the latest stable version
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-merge-conflict
-  - repo: https://github.com/psf/black
-    rev: 23.1.0  # Use the latest stable version
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.7.2
     hooks:
-      - id: black
-  - repo: https://github.com/PyCQA/flake8
-    rev: 6.1.0  # Use the latest stable version
+    -   id: shellcheck
+        args: ["--severity=warning"]
+  - repo: local
     hooks:
-      - id: flake8
-  - repo: https://github.com/pre-commit/mirrors-isort
-    rev: v5.12.0
-    hooks:
-      - id: isort
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0  # Use the latest stable version
-    hooks:
-      - id: trailing-whitespace
-      - id: end-of-file-fixer
-      - id: check-merge-conflict
-  - repo: https://github.com/psf/black
-    rev: 23.1.0  # Use the latest stable version
-    hooks:
-      - id: black
-  - repo: https://github.com/PyCQA/flake8
-    rev: 6.1.0  # Use the latest stable version
-    hooks:
-      - id: flake8
-  - repo: https://github.com/pre-commit/mirrors-isort
-    rev: v5.12.0
-    hooks:
-      - id: isort
+      - id: pytest-check
+        name: pytest-check
+        entry: bash -c 'pytest'
+        language: system

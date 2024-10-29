@@ -1,4 +1,6 @@
-if !([ "$ENV_VAR" == "local" ] || [ "$ENV_VAR" == "test" ]); then
+#!/bin/bash -x
+
+if ! ([ "$ENV_VAR" == "local" ] || [ "$ENV_VAR" == "test" ]); then
     echo "Invalid environment name: $ENV_VAR"
     exit 1
 fi
