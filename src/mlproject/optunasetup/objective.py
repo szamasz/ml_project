@@ -5,12 +5,13 @@ import pickle
 from typing import Optional
 
 import numpy as np
-from mlproject.optunasetup.lib.exceptions import InvalidUserInputException
-from mlproject.optunasetup.pipeline import init_model
 from optuna import Trial, TrialPruned
 from pandas import DataFrame, Series
 from sklearn.metrics import make_scorer, mean_absolute_percentage_error
 from sklearn.model_selection import KFold, cross_val_score, train_test_split
+
+from mlproject.optunasetup.lib.exceptions import InvalidUserInputException
+from mlproject.optunasetup.pipeline import init_model
 
 MIN_SAMPLES = 1024
 
@@ -43,8 +44,7 @@ def objective(
             mape_score = mean_absolute_percentage_error(y_test, model.predict(X_test))
             trial.report(mape_score * (-1), n_samples)
             n_samples *= 2
-            if n_samples > all_samples:
-                n_samples = all_samples
+            n_samples = min(n_samples, all_samples)
             if trial.should_prune():
                 print("Run pruned!")
                 raise TrialPruned()

@@ -1,13 +1,14 @@
 from __future__ import annotations
 
+from optuna import Trial
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+
 from mlproject.optunasetup.lib.algos import init_learner
 from mlproject.optunasetup.lib.columns import init_columns
 from mlproject.optunasetup.lib.encoders import init_encoder
 from mlproject.optunasetup.lib.imputers import init_imputers
 from mlproject.optunasetup.lib.scalers import init_robust_scaler
-from optuna import Trial
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
 
 
 def init_numerical_pipeline(trial: Trial, columns: list[str] = None) -> Pipeline:

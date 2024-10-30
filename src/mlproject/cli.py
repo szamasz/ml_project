@@ -4,14 +4,15 @@ import os
 
 import click
 import mlflow
-from mlproject.etl_data import process_data
-from mlproject.optunasetup.lib.utils import load_config, prepare_data, save_best_study
-from mlproject.optunasetup.objective import objective
 from optuna import create_study
 from optuna import logging as optuna_logging
 from optuna.pruners import MedianPruner, NopPruner
 from optuna.samplers import RandomSampler, TPESampler
 from sklearn import set_config
+
+from mlproject.etl_data import process_data
+from mlproject.optunasetup.lib.utils import load_config, prepare_data, save_best_study
+from mlproject.optunasetup.objective import objective
 
 logger = logging.getLogger(__name__)
 

@@ -2,13 +2,6 @@ from hashlib import sha256
 from unittest.mock import MagicMock, Mock, call, create_autospec
 
 import pytest
-from mlproject.optunasetup.lib import exceptions
-from mlproject.optunasetup.lib.algos import init_learner
-from mlproject.optunasetup.lib.columns import choose_columns
-from mlproject.optunasetup.lib.encoders import init_encoder
-from mlproject.optunasetup.lib.exceptions import InvalidColumnsSelectedException
-from mlproject.optunasetup.lib.imputers import init_imputers
-from mlproject.optunasetup.lib.utils import evaluate_model, get_reduced_features, save_best_study
 from optuna.trial import create_trial
 from pandas import DataFrame, Series
 from pandas.testing import assert_frame_equal
@@ -17,13 +10,21 @@ from sklearn.impute import KNNImputer, MissingIndicator, SimpleImputer
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
 
+from mlproject.optunasetup.lib import exceptions
+from mlproject.optunasetup.lib.algos import init_learner
+from mlproject.optunasetup.lib.columns import choose_columns
+from mlproject.optunasetup.lib.encoders import init_encoder
+from mlproject.optunasetup.lib.exceptions import InvalidColumnsSelectedException
+from mlproject.optunasetup.lib.imputers import init_imputers
+from mlproject.optunasetup.lib.utils import evaluate_model, get_reduced_features, save_best_study
+
 parameters = [
     "linear",
     LinearRegression,
 ]
 
 
-@pytest.fixture()
+@pytest.fixture
 def get_trial():
     trial = create_trial(value=1.0)
     mck_trial = create_autospec(trial, spec_set=True)

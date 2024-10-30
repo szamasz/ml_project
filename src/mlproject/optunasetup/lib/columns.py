@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from mlproject.optunasetup.lib.exceptions import InvalidColumnsSelectedException
 from optuna import Trial
+
+from mlproject.optunasetup.lib.exceptions import InvalidColumnsSelectedException
 
 
 def choose_columns(config, all_columns: list[str]):

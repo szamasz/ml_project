@@ -1,7 +1,8 @@
-from mlproject.optunasetup.lib.exceptions import UnsupportedAlgorithm
 from optuna import Trial
 from sklearn.ensemble import ExtraTreesRegressor, RandomForestRegressor
 from sklearn.linear_model import LinearRegression
+
+from mlproject.optunasetup.lib.exceptions import UnsupportedAlgorithm
 
 
 def init_random_forest(trial: Trial) -> RandomForestRegressor:

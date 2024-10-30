@@ -7,9 +7,10 @@ from pathlib import Path
 import pandas as pd
 import yaml
 from mlflow.models import infer_signature
-from mlproject.optunasetup.lib.exceptions import DatasetLoadingException
 from optuna.visualization import plot_optimization_history, plot_param_importances
 from sklearn.metrics import mean_absolute_percentage_error
+
+from mlproject.optunasetup.lib.exceptions import DatasetLoadingException
 
 cur_dir = os.path.abspath(os.curdir)
 

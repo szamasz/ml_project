@@ -35,6 +35,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/unittests/*.py" = ["S101", "D103"]
+"notebooks/*" = ["C403","N816"]
 
 [tool.ruff.lint.pep8-naming]
-ignore-names = ["X", "X_train", "X_test", "X_val"]
+ignore-names = ["X", "X_train", "X_test", "X_val", "pc_X_train", "pc_X_test"]
