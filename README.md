@@ -2,12 +2,12 @@
 
 ## Motivation
 
-The goal of this project is to demonstrate possiblity of on-prem data exploration, Machine Learning training and deployment with help of Open Source software based on actual data from real estate market in Poland for months 08.2023-11.2023
+The goal of this project is to demonstrate possiblity of on-prem data exploration, Machine Learning training and deployment with help of Open Source software based on actual data from real estate market in Poland for months 08.2023-11.2023 available in [Kaggle](https://www.kaggle.com/code/krzysztofjamroz/apartment-for-sale-in-poland-data-analysis/input)
 
 It consists of two parts:
 1. Exploratory data analysis and building crude ML models to test task viability with existing data. Files for this phase can be found:
 * EDA for the project is located in notebooks/apartments_eda.ipynb
-* Docs: yprofile report and presentation is located in docs/
+* Docs: yprofile report and powerpoint presentation are located in docs/
 
 2. automated model training, tuning and deployment with help of:
   * pandera data quality checks while loading CSV data
@@ -19,7 +19,6 @@ It consists of two parts:
 Data preparation is minimal in this demo as I'd expect data preparation and curation would be taks of data engineering team.
 
 # Workflow
-
 
 1. Start the project:
 * create secrets_local and secrets_test files based on available secrets.example file
@@ -79,3 +78,5 @@ Optuna is an automatic hyperparameter optimization software framework that allow
 2. treat feature selection as another hypertuning dimension - this may be superfluous after Feature Engineering properly done and expensive in terms of computing, but still may prove useful for example just to verify if including column in new iteration of data provides better results.
 3. visualize search peformence of all Optuna's trials in [visualizations](https://optuna.readthedocs.io/en/stable/reference/visualization/index.html) provided by Optuna dashboard. It may prove very useful in finding function minima by visualization of how search result depends on each feature space separately.
 4. integrates easily with mlflow
+
+Special kudos to Walter Sperat who described thoroughly potential of Optuna configuration in [series of articles](https://medium.com/@walter_sperat/using-optuna-with-sklearn-the-right-way-part-1-6b4ad0ab2451)
