@@ -18,17 +18,6 @@ It consists of two parts:
 
 Data preparation is minimal in this demo as I'd expect data preparation and curation would be taks of data engineering team.
 
-## Setup
-
-Prerequisites:
-* create secrets_local and secrets_test files based on available secrets.example file
-* run `./conf/env/run_local.sh`
-
-It will start:
-* Optuna dashboard on http://localhost:8080/
-* mlflow on           http://localhost:5000
-* minio replacement of S3 on http://localhost:9001/
-
 # Workflow
 
 
