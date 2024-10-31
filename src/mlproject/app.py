@@ -109,7 +109,7 @@ def app(run_name, alias):
     if not alias:
         alias = "best"
 
-    if st.button("Execute Code"):
+    if st.button("Predict"):
         data = [city, squareMeters, centreDistance, buildYear, latitude, longitude]
         data_input = {k: v for k, v in zip(cols, data)}
 

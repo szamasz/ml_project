@@ -5,6 +5,11 @@ export ENV_VAR=local
 FULL_PATH_TO_SCRIPT="$(realpath "${BASH_SOURCE[0]}")"
 DIRNAME="$(dirname "$FULL_PATH_TO_SCRIPT")"
 
+if [[ ! -f "$DIRNAME"/secrets_local ]]; then
+  echo "Error: $DIRNAME/secrets_local does not exist, quiting"
+  exit 1
+fi
+
 source "$DIRNAME"/secrets_local
 envsubst < "$DIRNAME"/env_docker_local_template > "$DIRNAME"/env_docker_local
 

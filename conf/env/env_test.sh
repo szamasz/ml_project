@@ -5,6 +5,11 @@ export ENV_VAR=test
 FULL_PATH_TO_SCRIPT="$(realpath "${BASH_SOURCE[0]}")"
 DIRNAME="$(dirname "$FULL_PATH_TO_SCRIPT")"
 
+if [[ ! -f "$DIRNAME"/secrets_test ]]; then
+  echo "Error: $DIRNAME/secrets_test does not exist, quiting"
+  exit 1
+fi
+
 source "$DIRNAME"/secrets_test
 
 envsubst < "$DIRNAME"/env_docker_test_template > "$DIRNAME"/env_docker_test
