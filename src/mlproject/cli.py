@@ -5,26 +5,24 @@ import os
 import click
 import mlflow
 from optuna import create_study
-from optuna import logging as optuna_logging
 from optuna.pruners import MedianPruner, NopPruner
 from optuna.samplers import RandomSampler, TPESampler
-from sklearn import set_config
 
 from mlproject.etl_data import process_data
 from mlproject.optunasetup.lib.utils import load_config, prepare_data, save_best_study
 from mlproject.optunasetup.objective import objective
 
-logger = logging.getLogger(__name__)
-
 run_nr = 1
+
+logger = logging.getLogger("mlproject")
 
 
 def best_model_callback(study, trial):
     global run_nr
-    print(f"Run nr: {run_nr}, optuna trial nr: {int(trial.number)+1}")
+    logger.info(f"Run nr: {run_nr}, optuna trial nr: {int(trial.number)+1}")
     run_nr += 1
     if study.best_trial.number == trial.number:
-        print(f"Found better model with mape: {study.best_value}")
+        logger.info(f"Found better model with mape: {study.best_value}")
         study.set_user_attr(key="best_model", value=trial.user_attrs["best_model"])
 
 
@@ -36,8 +34,6 @@ def best_model_callback(study, trial):
 @click.option("--sampler", type=click.STRING, required=False)
 @click.option("--preprocess_data", is_flag=True, help="Reprocess data before training")
 def main(config_file, experiment_name, number_of_trials, prune, sampler, preprocess_data):
-    set_config(transform_output="default")
-    optuna_logging.set_verbosity(optuna_logging.WARNING)
     prune = True if prune == "True" else False
     sampler = RandomSampler() if sampler == "Random" else TPESampler()
     optuna_storage_db = os.getenv("OPTUNA_DB_URI")
@@ -46,12 +42,12 @@ def main(config_file, experiment_name, number_of_trials, prune, sampler, preproc
         raise Exception(err_msg)
     # "postgresql://optunauser:optunapassword@localhost:5432/optuna"
 
-    print(f"DBURI: {optuna_storage_db}")
+    logger.debug(f"DBURI: {optuna_storage_db}")
 
     is_test_run = os.getenv("INTEGRATION_TEST", False) == "1"
 
     if preprocess_data:
-        print("""Reprocessing of input data""")
+        logger.info("""Reprocessing of input data""")
         process_data()
 
     pruner = NopPruner
@@ -64,7 +60,7 @@ def main(config_file, experiment_name, number_of_trials, prune, sampler, preproc
     if not experiment_name:
         experiment_name = config_file.split(".")[0]
 
-    print(
+    logger.info(
         f"""
     Running hyperparameter search with following options:
           * config file: {config_file}
@@ -104,11 +100,12 @@ def main(config_file, experiment_name, number_of_trials, prune, sampler, preproc
         n_trials=number_of_trials,
     )
 
-    print(f"Best mape score on training data: {float(study.best_value)*(-1)}")
+    logger.info(f"Best mape score on training data: {float(study.best_value)*(-1)}")
 
     with mlflow.start_run():
         save_best_study(study, experiment_name, X_train, y_train, X_val, y_val, columns, target, mlflow)
 
 
 if __name__ == "__main__":
+    # prepare_logging()
     main()

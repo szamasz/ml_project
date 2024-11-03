@@ -1,4 +1,6 @@
 import base64
+import json
+import logging
 import os
 import pickle
 from hashlib import sha256
@@ -7,12 +9,26 @@ from pathlib import Path
 import pandas as pd
 import yaml
 from mlflow.models import infer_signature
+from optuna import logging as optuna_logging
 from optuna.visualization import plot_optimization_history, plot_param_importances
+from sklearn import set_config
 from sklearn.metrics import mean_absolute_percentage_error
 
 from mlproject.optunasetup.lib.exceptions import DatasetLoadingException
 
 cur_dir = os.path.abspath(os.curdir)
+
+logger = logging.getLogger(__name__)
+
+
+def prepare_logging(log_configfile="logging.json"):
+    set_config(transform_output="default")
+    optuna_logging.set_verbosity(optuna_logging.WARNING)
+
+    with open(f"conf/{log_configfile}") as f:
+        config = json.load(f)
+
+    logging.config.dictConfig(config)
 
 
 def load_raw_data(dataset):
@@ -131,7 +147,7 @@ def get_reduced_features(X_train, X_val, params, columns):
     columns_to_drop = [k for k, v in params.items() if k in columns and v == False]
     X_train_selected = X_train.drop(columns_to_drop, axis=1)
     X_val_selected = X_val.drop(columns_to_drop, axis=1)
-    print(f"Following columns are dropped in final model: {','.join(columns_to_drop)}")
+    logger.info(f"Following columns are dropped in final model: {','.join(columns_to_drop)}")
     return X_train_selected, X_val_selected
 
 

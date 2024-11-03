@@ -77,6 +77,7 @@ Optuna is an automatic hyperparameter optimization software framework that allow
    2. other elements of ML pipeline, like encoders, scalers, imputers, etc
 2. treat feature selection as another hypertuning dimension - this may be superfluous after Feature Engineering properly done and expensive in terms of computing, but still may prove useful for example just to verify if including column in new iteration of data provides better results.
 3. visualize search peformence of all Optuna's trials in [visualizations](https://optuna.readthedocs.io/en/stable/reference/visualization/index.html) provided by Optuna dashboard. It may prove very useful in finding function minima by visualization of how search result depends on each feature space separately.
-4. integrates easily with mlflow
+4. utilize pruning optimization that stops unpromising trials early during the optimization process ans allows for saving time and resources
+5. integrates easily with mlflow
 
 Special kudos to Walter Sperat who described thoroughly potential of Optuna configuration in [series of articles](https://medium.com/@walter_sperat/using-optuna-with-sklearn-the-right-way-part-1-6b4ad0ab2451)

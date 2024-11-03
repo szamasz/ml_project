@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import logging
 import pickle
 from typing import Optional
 
@@ -14,6 +15,8 @@ from mlproject.optunasetup.lib.exceptions import InvalidUserInputException
 from mlproject.optunasetup.pipeline import init_model
 
 MIN_SAMPLES = 1024
+
+logger = logging.getLogger(__name__)
 
 
 def objective(
@@ -46,7 +49,7 @@ def objective(
             n_samples *= 2
             n_samples = min(n_samples, all_samples)
             if trial.should_prune():
-                print("Run pruned!")
+                logger.info("Run pruned!")
                 raise TrialPruned()
     else:
         X_train_sample = X
