@@ -1,0 +1,2 @@
+city,type,squareMeters,floor,floorCount,buildYear,latitude,longitude,centreDistance,poiCount,schoolDistance,clinicDistance,postOfficeDistance,kindergartenDistance,restaurantDistance,collegeDistance,pharmacyDistance,ownership,hasParkingSpace,hasBalcony,hasElevator,hasSecurity,hasStorageRoom,price
+gdansk,blockOfFlats,62.2,2.0,4.0,1993.0,54.34359,18.56373,5.91,6.0,0.16,1.773,0.075,0.168,0.38,4.052,0.506,condominium,no,yes,no,no,yes,579000

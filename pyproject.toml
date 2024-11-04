@@ -1,69 +1,42 @@
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
 
 [project]
-name = "ml_project"
+name = "mlproject"
+authors = [{name = "Piotr Szelemej"}]
 readme = "README.md"
-dynamic = ["dependencies", "version"]
+license = {file = "LICENSE"}
+classifiers = ["License :: OSI Approved :: MIT License"]
+version = "0.1.0"
+dynamic = ["description"]
 
 [project.scripts]
-ml-project = "ml_project.__main__:main"
-
-[project.entry-points."kedro.hooks"]
-
-[project.optional-dependencies]
-docs = [
-    "docutils<0.18.0",
-    "sphinx~=3.4.3",
-    "sphinx_rtd_theme==0.5.1",
-    "nbsphinx==0.8.1",
-    "sphinx-autodoc-typehints==1.11.1",
-    "sphinx_copybutton==0.3.1",
-    "ipykernel>=5.3, <7.0",
-    "Jinja2<3.1.0",
-    "myst-parser~=0.17.2",
-]
-
-[tool.setuptools.dynamic]
-dependencies = {file = "requirements.txt"}
-version = {attr = "ml_project.__version__"}
-
-[tool.setuptools.packages.find]
-where = ["src"]
-namespaces = false
-
-[tool.kedro]
-package_name = "ml_project"
-project_name = "ml-project"
-kedro_init_version = "0.19.2"
-tools = ['Linting', 'Testing', 'Custom Logging', 'Documentation', 'Data Structure', 'Kedro Viz']
-example_pipeline = "False"
-source_dir = "src"
+experiment = "mlproject.cli:main"
 
 [tool.pytest.ini_options]
 addopts = """
---cov-report term-missing \
---cov src/ml_project -ra"""
-
-[tool.coverage.report]
-fail_under = 0
-show_missing = true
-exclude_lines = ["pragma: no cover", "raise NotImplementedError"]
-
-[tool.ruff.format]
-docstring-code-format = true
+--ignore=docker/storage-local
+--ignore=tests/integration_tests"""
 
 [tool.ruff]
-line-length = 88
-show-fixes = true
+line-length = 120
 select = [
-    "F",   # Pyflakes
-    "W",   # pycodestyle
-    "E",   # pycodestyle
-    "I",   # isort
-    "UP",  # pyupgrade
-    "PL",  # Pylint
-    "T201", # Print Statement
+    "ALL", # include all the rules, including new ones
 ]
-ignore = ["E501"]  # Ruff format takes care of line-too-long
+ignore = [
+    "ANN001",
+    "ANN201",
+    "N806",
+    "T201",
+    "D100",
+    "G004",
+    "ANN101","ANN204","ARG001","ARG002","ARG005","B904","BLE001","C408","C416","D101","D102","D103","D104","D107","D200","D205","D401","D417","DTZ005","E501","E712","E722","E731","EM102","ERA001","F841","FBT002","FBT003","INP001","N801","N803","N815","N818","PD002","PD011","PD901","PERF203","PLR0913","PLR2004","PLW0603","PLW1508","PT006","PTH100","PTH123","RET504","RET505","RSE102","RUF013","RUF015","S110","S301","SIM105","SIM210","TCH002","TRY002","TRY003","TRY200","UP007",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/unittests/*.py" = ["S101", "D103"]
+"notebooks/*" = ["C403","N816"]
+
+[tool.ruff.lint.pep8-naming]
+ignore-names = ["X", "X_train", "X_test", "X_val", "pc_X_train", "pc_X_test"]

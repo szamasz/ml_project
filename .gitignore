@@ -7,3 +7,7 @@ todo.txt
 .venv/
 logs/
 mlruns/
+mlartifacts/
+docker/storage-local/
+tests/integration_tests/storage-tests/
+conf/env/secrets*

@@ -1,0 +1,84 @@
+services:
+  postgres:
+    container_name: postgres_$ENV_VAR
+    image: postgres
+    hostname: localhost
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    env_file: ../conf/env/env_docker_$ENV_VAR
+    environment:
+      - ENV_VAR
+    profiles: [local, test]
+    volumes:
+      - $STORAGE_DIR/postgres:/var/lib/postgresql/data:z
+      - ../conf/env/postgres_init.sh:/docker-entrypoint-initdb.d/init-database.sh
+    #restart: unless-stopped
+
+  pgadmin:
+    container_name: pgadmin_$ENV_VAR
+    image: dpage/pgadmin4
+    depends_on:
+      - postgres
+    profiles: [test]
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    env_file: ../conf/env/env_docker_$ENV_VAR
+    restart: unless-stopped
+
+  mlflow:
+    container_name: mlflow_$ENV_VAR
+    image: bitnami/mlflow #prefered to vendor's image because it supports sqlalchemy backends which makes use of postgresql possible
+    depends_on:
+      - postgres
+    command: >
+      /opt/bitnami/python/bin/mlflow server --host 0.0.0.0 --port 5000
+      --backend-store-uri postgresql://${MLFLOW_DB_USER}:${MLFLOW_DB_PASSWORD}@postgres/mlflow
+      --default-artifact-root mlflow-artifacts:/ --artifacts-destination s3://mlflow --serve-artifacts
+    env_file: ../conf/env/env_docker_$ENV_VAR
+    profiles: [local, test]
+    ports:
+      - "${MLFLOW_PORT:-5000}:5000"
+    volumes:
+      - $STORAGE_DIR/mlflow:/app
+    working_dir: /app
+
+  optuna-dashboard:
+    container_name: optuna_$ENV_VAR
+    image: ghcr.io/optuna/optuna-dashboard
+    #command: postgresql://${OPTUNA_DB_USER}:${OPTUNA_DB_PASSWORD}@postgres/optuna
+    entrypoint: ["sh","-c","/usr/local/bin/python -c \"import optuna; optuna.storages.RDBStorage('postgresql+psycopg2://${OPTUNA_DB_USER}:${OPTUNA_DB_PASSWORD}@postgres/optuna')\" && /usr/local/bin/optuna-dashboard --port 8080 --host 0.0.0.0 --server gunicorn postgresql://${OPTUNA_DB_USER}:${OPTUNA_DB_PASSWORD}@postgres/optuna"] #https://github.com/optuna/optuna/issues/3999
+    env_file: ../conf/env/env_docker_$ENV_VAR
+    profiles: [local, test]
+    depends_on:
+      - postgres
+    ports:
+      - "${OPTUNA_PORT:-8080}:8080"
+    volumes:
+      - $STORAGE_DIR/optuna:/app
+
+  minio:
+    container_name: minio_$ENV_VAR
+    image: quay.io/minio/minio
+    command: server --console-address ":9001" /data
+    env_file: ../conf/env/env_docker_$ENV_VAR
+    profiles: [local, test]
+    ports:
+      - "${MINIO_PORT1:-9000}:9000"
+      - "${MINIO_PORT2:-9001}:9001"
+    volumes:
+      - $STORAGE_DIR/minio:/app
+
+  createbuckets:
+    container_name: createbuckets_$ENV_VAR
+    image: minio/mc
+    depends_on:
+      - minio
+    env_file: ../conf/env/env_docker_$ENV_VAR
+    profiles: [local, test]
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
+      /usr/bin/mc mb myminio/mlflow;
+      /usr/bin/mc policy set public myminio/mlflow;
+      exit 0;
+      "

@@ -19,3 +19,8 @@ optuna-dashboard
 streamlit
 pydantic
 click
+pytest
+pytest-mock
+pre-commit
+ruff
+pandera
