@@ -18,7 +18,7 @@ It consists of two parts:
 
 Data preparation is minimal in this demo as I'd expect data preparation and curation would be taks of data engineering team.
 
-# Workflow
+## Workflow
 
 1. Start the project:
 * create secrets_local and secrets_test files based on available secrets.example file
@@ -35,15 +35,15 @@ It will start:
   * parametrized - optuna will create search space with possible combinations of columns excluded and included
 
 3. Edit files in src/mlproject/optunasetup/lib/ to add imputers, scalers, encoders and ML algorithms together with their hyperparameters
-4. Run `python -m mlproject` with following options
-Options:
-`  --config_file TEXT          [required]`
-`  --experiment_name TEXT`
-`  --number_of_trials INTEGER  [required]`
-`  --prune TEXT`
-`  --sampler TEXT`
-`  --preprocess_data           Reprocess data before training`
-`  --help                      Show this message and exit.`
+4. Run `python -m mlproject` with following options\
+Options:\
+`  --config_file TEXT          [required]`\
+`  --experiment_name TEXT`\
+`  --number_of_trials INTEGER  [required]`\
+`  --prune TEXT`\
+`  --sampler TEXT`\
+`  --preprocess_data           Reprocess data before training`\
+`  --help                      Show this message and exit.`\
 
 For example:
 `python -m mlproject --config_file=apartments_selected_columns.yml --experiment_name=apartments_selected_columns_linear --number_of_trials=100 --sampler=Random --preprocess_data`
@@ -67,7 +67,7 @@ You'll get warning if you provide invalid input data outside of expected range.
 
 **Tests**:
 1. unit tests: `pytest`
-2. integration tests: `/home/piotr/projects/ml-project/tests/integration_tests/run_test.sh`
+2. integration tests: `./tests/integration_tests/run_test.sh`
 
 ## Optuna benefits
 
