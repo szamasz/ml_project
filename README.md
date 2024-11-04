@@ -43,9 +43,9 @@ Options:\
 `  --prune TEXT`\
 `  --sampler TEXT`\
 `  --preprocess_data           Reprocess data before training`\
-`  --help                      Show this message and exit.`\
+`  --help                      Show this message and exit.`
 
-For example:
+For example:\
 `python -m mlproject --config_file=apartments_selected_columns.yml --experiment_name=apartments_selected_columns_linear --number_of_trials=100 --sampler=Random --preprocess_data`
 
 `apartments_selected_columns.yml` contains configuration limiting number of selected features to those that were discovered during EDA phase to provide most predictive power (`city`,`squareMeters`,`centreDistance`,`buildYear`,`latitude`,`longitude`)
