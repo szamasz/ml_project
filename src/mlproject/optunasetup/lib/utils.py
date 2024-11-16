@@ -49,8 +49,10 @@ def load_raw_data(dataset):
 
     """
     data_dir = cur_dir + "/data/01_raw/" + dataset + "/"
-
-    files = ["apartments_pl_2023_08.csv.zip"]
+    print(f"Data_dir: {data_dir}")
+    directory = Path(data_dir)
+    files = [file.name for file in directory.iterdir() if file.is_file()]
+    print(f"Files: {files}")
     for f in files:
         df = pd.read_csv(data_dir + f)
         df.name = dataset
@@ -94,9 +96,7 @@ def load_data(dataset, is_test_run=False):
         pd.DataFrame: DataFrame with data
 
     """
-    path = "/data"
-    if is_test_run:
-        path = "/tests/integration_tests" + path
+    path = "/tests/integration_tests/data" if is_test_run else "/data/05_model_input"
     data_dir = cur_dir + path
     filename = data_dir + "/" + dataset + ".csv"
     try:
