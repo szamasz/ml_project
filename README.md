@@ -54,7 +54,7 @@ For example:\
 
 If user wishes to start search with new configuration or parameters, it's recommended to use new unique `experiment_name`
 
-Next to ML model parameters and metrics the flow exports also Optuna dashboard's visualizations:
+Next to ML model parameters and metrics the flow exports also Optuna dashboard's visualizations to MLFlow:
 * [Parameter Importances](https://optuna.readthedocs.io/en/v2.0.0/reference/generated/optuna.visualization.plot_param_importances.html)
 * [Optimization history](https://optuna.readthedocs.io/en/stable/reference/visualization/generated/optuna.visualization.plot_optimization_history.html)
 

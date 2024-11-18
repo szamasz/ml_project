@@ -24,3 +24,5 @@ pytest-mock
 pre-commit
 ruff
 pandera
+dvc
+dvc-s3
