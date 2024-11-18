@@ -78,7 +78,9 @@ services:
     entrypoint: >
       /bin/sh -c "
       /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
-      /usr/bin/mc mb myminio/mlflow;
-      /usr/bin/mc policy set public myminio/mlflow;
+      /usr/bin/mc mb --ignore-existing myminio/mlflow;
+      /usr/bin/mc anonymous set public myminio/mlflow;
+      /usr/bin/mc mb --ignore-existing myminio/data-source;
+      /usr/bin/mc anonymous set public myminio/data-source;
       exit 0;
       "
