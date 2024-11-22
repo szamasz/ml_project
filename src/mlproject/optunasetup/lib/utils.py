@@ -3,11 +3,20 @@ import json
 import logging
 import os
 import pickle
+import tempfile
 from hashlib import sha256
 from pathlib import Path
 
 import pandas as pd
 import yaml
+from evidently.metric_preset import RegressionPreset
+from evidently.report import Report
+from evidently.test_preset import (
+    DataDriftTestPreset,
+    RegressionTestPreset,
+)
+from evidently.test_suite import TestSuite
+from mlflow import MlflowClient
 from mlflow.models import infer_signature
 from optuna import logging as optuna_logging
 from optuna.visualization import plot_optimization_history, plot_param_importances
@@ -49,10 +58,10 @@ def load_raw_data(dataset):
 
     """
     data_dir = cur_dir + "/data/01_raw/" + dataset + "/"
-    print(f"Data_dir: {data_dir}")
+    # print(f"Data_dir: {data_dir}")
     directory = Path(data_dir)
     files = [file.name for file in directory.iterdir() if file.is_file()]
-    print(f"Files: {files}")
+    # print(f"Files: {files}")
     for f in files:
         df = pd.read_csv(data_dir + f)
         df.name = dataset
@@ -79,7 +88,7 @@ def load_config(file="optuna-config.yml", is_test_run=False):
         return yaml.safe_load(f)["sources"]
 
 
-def load_data(dataset, is_test_run=False):
+def load_data(dataset, is_test_run=False, load_reference=False):
     """Loads data from input files and returns it as Pandas Dataframe.
 
     Args:
@@ -98,7 +107,7 @@ def load_data(dataset, is_test_run=False):
     """
     path = "/tests/integration_tests/data" if is_test_run else "/data/05_model_input"
     data_dir = cur_dir + path
-    filename = data_dir + "/" + dataset + ".csv"
+    filename = data_dir + "/" + ("ref_" if load_reference else "") + dataset + ".csv"
     try:
         df = pd.read_csv(filename)
     except FileNotFoundError:
@@ -153,12 +162,12 @@ def get_reduced_features(X_train, X_val, params, columns):
 
 def evaluate_model(best_model, X_train_selected, X_val_selected, y_train, y_val):
     model_bytes = base64.b64decode(best_model.encode("ascii"))
-    pipeline = pickle.loads(model_bytes)
-    pipeline.fit(X_train_selected, y_train)
-    y_pred = pipeline.predict(X_val_selected)
+    best_model_bin = pickle.loads(model_bytes)
+    best_model_bin.fit(X_train_selected, y_train)
+    y_pred = best_model_bin.predict(X_val_selected)
     signature = infer_signature(X_train_selected, y_pred)
     validation_mape = mean_absolute_percentage_error(y_val, y_pred)
-    return pipeline, signature, validation_mape
+    return best_model_bin, signature, validation_mape
 
 
 def save_best_study(study, experiment_name, X_train, y_train, X_val, y_val, columns, target, mlflow):
@@ -184,7 +193,6 @@ def save_best_study(study, experiment_name, X_train, y_train, X_val, y_val, colu
     log_plots(study, mlflow)
 
     best_model = study.user_attrs["best_model"]
-
     mlflow.log_params({"hash": sha256(best_model.encode("utf-8")).hexdigest()[:1024]})
 
     X_train_selected, X_val_selected = get_reduced_features(X_train, X_val, study.best_trial.params, columns)
@@ -197,6 +205,117 @@ def save_best_study(study, experiment_name, X_train, y_train, X_val, y_val, colu
         signature=signature,
         registered_model_name=experiment_name,
     )
+    return pipeline
+
+
+def detect_data_and_model_drift(mlflow, config, model_name, current_model):
+    mlflow_client = MlflowClient()
+
+    dataset = list(config.keys())[0]
+    target = config[dataset]["target"]
+    data_cur = load_data(dataset, is_test_run=False, load_reference=False)
+    data_cur.rename(columns={target: "target"}, inplace=True)
+    data_ref = load_data(dataset, is_test_run=False, load_reference=True)
+    data_ref.rename(columns={target: "target"}, inplace=True)
+    if data_ref.equals(data_cur):
+        logger.info("First run of drift detection, we don't have reference dataset yet")
+        return 0
+
+    best_model = get_model(mlflow, model_name)
+
+    # current_model_bytes = base64.b64decode(current_model.encode("ascii"))
+    # current_model_bin = pickle.loads(current_model_bytes)
+
+    df_cur = data_cur.copy()
+    df_ref = data_cur.copy()
+    df_cur["prediction"] = current_model.predict(df_cur)
+    df_ref["prediction"] = best_model.predict(df_cur)  # we are comparing performance of both models on current data
+
+    nu_fails = evidently_evaluate_data_drift(mlflow, data_ref, data_cur)
+    if nu_fails:
+        set_alias(mlflow_client, model_name, "data_drift")
+    else:
+        logger.info("Data drift not detected")
+    nu_fails = evidently_evaluate_model_quality(mlflow, df_ref, df_cur)
+    if nu_fails:
+        set_alias(mlflow_client, model_name, "model_drift")
+    else:
+        logger.info("Model drift not detected")
+    return None
+
+
+def set_alias(mlflow_client, model_name, alias):
+    msg = "Data drift detected" if alias == "data_drift" else "Model drift detected"
+    logger.warning(msg)
+    versions = mlflow_client.search_model_versions(f"name='{model_name}'")
+    latest_version = sorted(versions, key=lambda x: x.last_updated_timestamp, reverse=True)[0].version
+    mlflow_client.set_registered_model_alias(model_name, "model_drift", latest_version)
+
+
+def evidently_evaluate_data_drift(mlflow, df_ref, df_cur):
+    data_drift_suite = TestSuite(tests=[DataDriftTestPreset()])
+    data_drift_suite.run(reference_data=df_ref, current_data=df_cur)
+    with tempfile.TemporaryDirectory() as tempdir:
+        filename = "data_drift.html"
+        path = Path(tempdir, filename)
+        data_drift_suite.save_html(path.name)
+        mlflow.log_artifact(path.name, filename)
+        logger.info("Uploaded data drift report to mlflow")
+    drift_dict = data_drift_suite.as_dict()
+    nu_fails = int(drift_dict["summary"]["by_status"].get("FAIL", 0))
+    return nu_fails
+
+
+def log_evidently_result(mlflow, evidently_result, filename, log_message):
+    with tempfile.TemporaryDirectory() as tempdir:
+        path = Path(tempdir, filename)
+        evidently_result.save_html(path.name)
+        mlflow.log_artifact(path.name, filename)
+        logger.info(log_message)
+
+
+def evidently_evaluate_model_quality(mlflow, df_ref, df_cur):
+    regression_report = Report(
+        metrics=[
+            RegressionPreset(),
+        ],
+    )
+    regression_report.run(reference_data=df_ref, current_data=df_cur)
+    filename = "regression_quality_report.html"
+    log_message = "Uploaded model drift report to mlflow"
+    log_evidently_result(mlflow, regression_report, filename, log_message)
+
+    regression_test = TestSuite(
+        tests=[
+            RegressionTestPreset(),
+        ],
+    )
+    regression_test.run(reference_data=df_ref, current_data=df_cur)
+    filename = "regression_quality_test.html"
+    log_message = "Uploaded model drift test result to mlflow"
+    log_evidently_result(mlflow, regression_test, filename, log_message)
+    regr_drift_dict = regression_test.as_dict()
+    # print(f"Here: {regr_drift_dict['tests']}")
+    nu_fails = 1 if regr_drift_dict["tests"][3]["status"] == "FAIL" else 0  # we test only MAPE
+    return nu_fails
+
+
+def get_model(mlflow, name, alias="best"):
+    """Fetch model from mlfow based on provided name and alias.
+
+    Args:
+    ----
+        mlflow: mlflow module
+        name (str): experimet name - provided to the app in the commandline
+        alias (str, optional): model alias to be fetched. Alias is asigned
+        manually to the best model in mlfow. Defaults to "best".
+
+    Returns:
+    -------
+        mflow.model: model object returned from mlfow artifacts
+
+    """
+    return mlflow.pyfunc.load_model(f"models:/{name}@{alias}")
 
 
 def save_best_study2(study, name, X_train, y_train, X_val, y_val):

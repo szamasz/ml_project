@@ -26,3 +26,4 @@ ruff
 pandera
 dvc
 dvc-s3
+evidently

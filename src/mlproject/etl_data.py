@@ -1,4 +1,6 @@
+import os
 from datetime import datetime
+from pathlib import Path
 
 import pandera as pa
 from pandera.typing import Series
@@ -7,6 +9,8 @@ from pandera.typing.common import Category, Float64, Int16, Int64
 from mlproject.optunasetup.lib.utils import load_raw_data
 
 current_year = datetime.now().year
+
+model_directory = "data/05_model_input/"
 
 
 class ApartmentsSchema(pa.DataFrameModel):
@@ -61,40 +65,25 @@ class ApartmentsSchema(pa.DataFrameModel):
     price: Series[Int64] = pa.Field(ge=0, nullable=True)
 
 
-apartments_dtype = {
-    "city": "string",
-    "type": "string",
-    "squareMeters": "Float64",
-    "floor": "Int16",
-    "floorCount": "Int16",
-    "buildYear": "Int16",
-    "latitude": "Float64",
-    "longitude": "Float64",
-    "centreDistance": "Float64",
-    "poiCount": "Int16",
-    "schoolDistance": "Float64",
-    "clinicDistance": "Float64",
-    "postOfficeDistance": "Float64",
-    "kindergartenDistance": "Float64",
-    "restaurantDistance": "Float64",
-    "collegeDistance": "Float64",
-    "pharmacyDistance": "Float64",
-    "ownership": "string",
-    "hasParkingSpace": "string",
-    "hasBalcony": "string",
-    "hasElevator": "string",
-    "hasSecurity": "string",
-    "hasStorageRoom": "string",
-    "price": "Int64",
-}
+def handle_reference(dataset, df):
+    ref_name = f"ref_{dataset}.csv"
+    cur_dir = os.path.abspath(os.curdir)
+    directory = Path(cur_dir) / Path(model_directory)
+    files = [file.name for file in directory.iterdir() if file.is_file() and file.name == ref_name]
+    if len(files) == 0:
+        df.to_csv(f"{model_directory}/{ref_name}", index=False)
 
 
-def process_data():
-    df_apartments = load_raw_data("apartments")
+def process_data(dataset, detect_drift):
+    df_apartments = load_raw_data(dataset)
 
     df_apartments_1 = df_apartments.drop(["id", "condition", "buildingMaterial", "rooms"], axis=1)
 
     df_apartments_1 = df_apartments_1.drop_duplicates()
+
+    df_apartments_1 = df_apartments_1[
+        df_apartments_1["ownership"] != "udział"
+    ]  # dropping 1 rows that have unexpected value in month 10 CSV and 2 rows in month 11 CSV
 
     df_apartments_1.loc[df_apartments_1["type"].isna(), ["type"]] = "Other"
     df_apartments_1.loc[df_apartments_1["hasElevator"].isna(), ["hasElevator"]] = "Other"
@@ -109,4 +98,7 @@ def process_data():
 
     ApartmentsSchema.validate(df_apartments_1)
 
-    df_apartments_1.to_csv("data/05_model_input/apartments.csv", index=False)
+    df_apartments_1.to_csv(f"{model_directory}/{dataset}.csv", index=False)
+
+    if detect_drift:
+        handle_reference(dataset, df_apartments_1)
