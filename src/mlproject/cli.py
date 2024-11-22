@@ -9,7 +9,7 @@ from optuna.pruners import MedianPruner, NopPruner
 from optuna.samplers import RandomSampler, TPESampler
 
 from mlproject.etl_data import process_data
-from mlproject.optunasetup.lib.utils import load_config, prepare_data, save_best_study
+from mlproject.optunasetup.lib.utils import detect_data_and_model_drift, load_config, prepare_data, save_best_study
 from mlproject.optunasetup.objective import objective
 
 run_nr = 1
@@ -33,7 +33,8 @@ def best_model_callback(study, trial):
 @click.option("--prune", type=click.STRING, required=False)
 @click.option("--sampler", type=click.STRING, required=False)
 @click.option("--preprocess_data", is_flag=True, help="Reprocess data before training")
-def main(config_file, experiment_name, number_of_trials, prune, sampler, preprocess_data):
+@click.option("--detect_drift", is_flag=True, help="Compare result with ref dataset to discover data and model drift")
+def main(config_file, experiment_name, number_of_trials, prune, sampler, preprocess_data, detect_drift):
     prune = True if prune == "True" else False
     sampler = RandomSampler() if sampler == "Random" else TPESampler()
     optuna_storage_db = os.getenv("OPTUNA_DB_URI")
@@ -46,9 +47,14 @@ def main(config_file, experiment_name, number_of_trials, prune, sampler, preproc
 
     is_test_run = os.getenv("INTEGRATION_TEST", False) == "1"
 
-    if preprocess_data:
+    config = load_config(config_file, is_test_run)
+    dataset = list(config.keys())[0]
+
+    if (
+        detect_drift or preprocess_data
+    ):  # if we run in production mode (we check for drift) then we must preprocess data
         logger.info("""Reprocessing of input data""")
-        process_data()
+        process_data(dataset, detect_drift)
 
     pruner = NopPruner
     if prune:
@@ -70,8 +76,6 @@ def main(config_file, experiment_name, number_of_trials, prune, sampler, preproc
           * sampler: {sampler!s}
     """,
     )
-
-    config = load_config(config_file, is_test_run)
 
     X_train, X_val, y_train, y_val, num_columns, cat_columns, columns, target = prepare_data(
         config,
@@ -103,7 +107,9 @@ def main(config_file, experiment_name, number_of_trials, prune, sampler, preproc
     logger.info(f"Best mape score on training data: {float(study.best_value)*(-1)}")
 
     with mlflow.start_run():
-        save_best_study(study, experiment_name, X_train, y_train, X_val, y_val, columns, target, mlflow)
+        current_model = save_best_study(study, experiment_name, X_train, y_train, X_val, y_val, columns, target, mlflow)
+        if detect_drift:
+            detect_data_and_model_drift(mlflow, config, experiment_name, current_model)
 
 
 if __name__ == "__main__":
