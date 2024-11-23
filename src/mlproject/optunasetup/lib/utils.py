@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import pickle
+import re
 import tempfile
 from hashlib import sha256
 from pathlib import Path
@@ -16,6 +17,7 @@ from evidently.test_preset import (
     RegressionTestPreset,
 )
 from evidently.test_suite import TestSuite
+from git import Repo
 from mlflow import MlflowClient
 from mlflow.models import infer_signature
 from optuna import logging as optuna_logging
@@ -231,36 +233,46 @@ def detect_data_and_model_drift(mlflow, config, model_name, current_model):
     df_cur["prediction"] = current_model.predict(df_cur)
     df_ref["prediction"] = best_model.predict(df_cur)  # we are comparing performance of both models on current data
 
+    alias_month = get_gitcommit_message()
+    latest_version = set_alias(mlflow_client, model_name, alias_month)
     nu_fails = evidently_evaluate_data_drift(mlflow, data_ref, data_cur)
+
     if nu_fails:
-        set_alias(mlflow_client, model_name, "data_drift")
+        logger.warning("Data drift detected")
+        set_alias(mlflow_client, model_name, "data_drift", latest_version)
     else:
         logger.info("Data drift not detected")
     nu_fails = evidently_evaluate_model_quality(mlflow, df_ref, df_cur)
     if nu_fails:
-        set_alias(mlflow_client, model_name, "model_drift")
+        logger.warning("Model drift detected")
+        set_alias(mlflow_client, model_name, "model_drift", latest_version)
     else:
         logger.info("Model drift not detected")
     return None
 
 
-def set_alias(mlflow_client, model_name, alias):
-    msg = "Data drift detected" if alias == "data_drift" else "Model drift detected"
-    logger.warning(msg)
-    versions = mlflow_client.search_model_versions(f"name='{model_name}'")
-    latest_version = sorted(versions, key=lambda x: x.last_updated_timestamp, reverse=True)[0].version
-    mlflow_client.set_registered_model_alias(model_name, "model_drift", latest_version)
+def get_gitcommit_message():
+    repo = Repo(".")
+    message = repo.head.commit.message
+
+    message_clean = re.sub(r"[^0-9a-zA-Z\-_]+", "_", message)
+    return message_clean
+
+
+def set_alias(mlflow_client, model_name, alias, latest_version=None):
+    if not latest_version:
+        versions = mlflow_client.search_model_versions(f"name='{model_name}'")
+        latest_version = sorted(versions, key=lambda x: x.last_updated_timestamp, reverse=True)[0].version
+    mlflow_client.set_registered_model_alias(model_name, alias, latest_version)
+    return latest_version
 
 
 def evidently_evaluate_data_drift(mlflow, df_ref, df_cur):
     data_drift_suite = TestSuite(tests=[DataDriftTestPreset()])
     data_drift_suite.run(reference_data=df_ref, current_data=df_cur)
-    with tempfile.TemporaryDirectory() as tempdir:
-        filename = "data_drift.html"
-        path = Path(tempdir, filename)
-        data_drift_suite.save_html(path.name)
-        mlflow.log_artifact(path.name, filename)
-        logger.info("Uploaded data drift report to mlflow")
+    filename = "data_drift.html"
+    log_message = "Uploaded data drift report to mlflow"
+    log_evidently_result(mlflow, data_drift_suite, filename, log_message)
     drift_dict = data_drift_suite.as_dict()
     nu_fails = int(drift_dict["summary"]["by_status"].get("FAIL", 0))
     return nu_fails
@@ -268,9 +280,9 @@ def evidently_evaluate_data_drift(mlflow, df_ref, df_cur):
 
 def log_evidently_result(mlflow, evidently_result, filename, log_message):
     with tempfile.TemporaryDirectory() as tempdir:
-        path = Path(tempdir, filename)
-        evidently_result.save_html(path.name)
-        mlflow.log_artifact(path.name, filename)
+        path = Path(tempdir, filename).absolute().as_posix()
+        evidently_result.save_html(path)
+        mlflow.log_artifact(path, filename)
         logger.info(log_message)
 
 
