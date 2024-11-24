@@ -1,0 +1,7 @@
+[core]
+    remote = apartments
+['remote "apartments"']
+    url = s3://data-source
+    access_key_id = ukjwf5mzmFJ2An00HCMC
+    secret_access_key = xDUoCBXUODriX40nCZmJIVnjtwgdnMA8UCuOfTY1
+    endpointurl = http://localhost:9000/
