@@ -62,7 +62,7 @@ def load_raw_data(dataset):
     data_dir = cur_dir + "/data/01_raw/" + dataset + "/"
     # print(f"Data_dir: {data_dir}")
     directory = Path(data_dir)
-    files = [file.name for file in directory.iterdir() if file.is_file()]
+    files = [file.name for file in directory.iterdir() if file.is_file() and file.name.endswith("csv.zip")]
     # print(f"Files: {files}")
     for f in files:
         df = pd.read_csv(data_dir + f)
