@@ -30,8 +30,13 @@ def best_model_callback(study, trial):
 @click.option("--config_file", type=click.STRING, required=True)
 @click.option("--experiment_name", type=click.STRING, required=False)
 @click.option("--number_of_trials", type=click.INT, default=1, required=True)
-@click.option("--prune", type=click.STRING, required=False)
-@click.option("--sampler", type=click.STRING, required=False)
+@click.option("--prune", is_flag=True, help="Use MedianPruner to prune nonpromising trials")
+@click.option(
+    "--sampler",
+    type=click.STRING,
+    required=False,
+    help="TPESampler(default) or RandomSampler if 'Random' used",
+)
 @click.option("--preprocess_data", is_flag=True, help="Reprocess data before training")
 @click.option("--detect_drift", is_flag=True, help="Compare result with ref dataset to discover data and model drift")
 def main(config_file, experiment_name, number_of_trials, prune, sampler, preprocess_data, detect_drift):
@@ -41,7 +46,6 @@ def main(config_file, experiment_name, number_of_trials, prune, sampler, preproc
     if not optuna_storage_db:
         err_msg = "Missing db storage for optuna"
         raise Exception(err_msg)
-    # "postgresql://optunauser:optunapassword@localhost:5432/optuna"
 
     logger.debug(f"DBURI: {optuna_storage_db}")
 

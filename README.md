@@ -40,9 +40,10 @@ Options:\
 `  --config_file TEXT          [required]`\
 `  --experiment_name TEXT`\
 `  --number_of_trials INTEGER  [required]`\
-`  --prune TEXT`\
-`  --sampler TEXT`\
+`  --prune Flag                Use MedianPruner to prune nonpromising trials`\
+`  --sampler TEXT               TPESampler(default) or RandomSampler if 'Random' used`\
 `  --preprocess_data           Reprocess data before training`\
+`  --data_drift                Compare result with ref dataset to discover data and model drift`\
 `  --help                      Show this message and exit.`
 
 For example:\
@@ -81,3 +82,40 @@ Optuna is an automatic hyperparameter optimization software framework that allow
 5. integrates easily with mlflow
 
 Special kudos to Walter Sperat who described thoroughly potential of Optuna configuration in [series of articles](https://medium.com/@walter_sperat/using-optuna-with-sklearn-the-right-way-part-1-6b4ad0ab2451)
+
+## Data and model drift detection - DVC & Evidently
+
+After you run extensive experiments on various algorithms and best model with optimal hyperparamters is found, you may run the project in the production mode by running the project on consecutive batches of production data with `--data_drift` option which:
+* always triggers data preprocessing (data cleaning)
+*  for each batch but the first one set alias based on curret git commit message - this is to integrate processing of consecuitve batches with DVC, as shown here:
+```
+cd data/
+cp 00_source/apartments/apartments_pl_2023_09.csv.zip 01_raw/apartments/apartments.csv.zip #data/00_source simulates data source with consecutive batches coming each month
+dvc add 01_raw/apartments/apartments.csv.zip     #record new version of input data
+dvc push                                         #push the file to DVC remote which is S3 Minio storage (set up in run_local.sh)
+git add 01_raw/apartments/apartments.csv.zip.dvc #record new version of data in SCM
+git commit -m '09_2023'                          #in commit message provide value that is suitable for MLFlow alias and describe current batch
+python -m mlproject --config_file=apartments_selected_columns.yml --experiment_name=apartments_selected_columns_drift --number_of_trials=20 --sampler=Random --detect_drift                  #run the hyperparameter search to build model that fits current data best
+`````
+Recording of DVC data versions of available four months of data is stored on branch `detect_drift`
+* for each batch but the first one, build Evidently's
+  * [Data Drift](https://docs.evidentlyai.com/presets/data-drift) Report to detect drift between current and first batch of data
+  * [Regression Model Drift](https://docs.evidentlyai.com/presets/reg-performance) Report and Test to detect peformance improvement between current best model (build upon first batch, marked manually with 'best' alias in MLFlow) and new version of model built based on current batch.
+  All Evidently objects are uploaded as artifacts to MLFlow for later review
+* if data or model drift is detected, respectively `data_drift` or `model_drift` alias is set to current version of the model
+
+### Results
+After processing all files MLFlow shows Evidently detects both data and model drift
+![Mlflow view](./docs/evaluation/mlflow_nov_2023.png)
+
+Data drift pertains only to 1 column - price - apparently data was taken during booming real estate market and for apartment with the same features prices were significantly higher 4 months later
+![data drift](./docs/evaluation/data_drift.png)
+
+Full data drift [report](./docs/evaluation/data_drift.html)
+
+Current model built on freshest data has MAPE lower by 4.43%:
+![Mlflow view](./docs/evaluation/model_drift.png)
+
+Ful reports for November:
+[model quality report](./docs/evaluation/regression_quality_report.html)
+[model quality test result](./docs/evaluation/regression_quality_test.html)
