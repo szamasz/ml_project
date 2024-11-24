@@ -1,6 +1,6 @@
 outs:
-- md5: 8dba8a1bb5bd15815249275bd865424c
-  size: 1057323
+- md5: 4cc7f6634086e5b34ee6926a68a066ee
+  size: 1038967
   isexec: true
   hash: md5
   path: apartments.csv.zip
